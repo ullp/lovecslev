@@ -9,7 +9,11 @@ export type DomainErrorCode =
   | 'INVALID_PACKAGE_AMOUNT'
   | 'INVALID_OPTIMIZER_INPUT'
   | 'VALIDATION_ERROR'
-  | 'NOT_FOUND';
+  | 'NOT_FOUND'
+  | 'UNAUTHORIZED'
+  | 'CONFLICT'
+  | 'PLAN_LIMIT_REACHED'
+  | 'PREMIUM_REQUIRED';
 
 export class DomainError extends Error {
   readonly code: DomainErrorCode;

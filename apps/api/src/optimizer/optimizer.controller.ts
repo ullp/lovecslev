@@ -1,6 +1,7 @@
 import { Body, Controller, Headers, HttpCode, Post } from '@nestjs/common';
 import { OptimizeRequestDto } from './dto/optimize-request.dto';
-import { OptimizerService, type OptimizeResponse, type Plan } from './optimizer.service';
+import { OptimizerService } from './optimizer.service';
+import type { OptimizeResponse, Plan } from './optimizer.types';
 
 /** Do M3 nahrazuje `X-Plan` hlavičku reálný auth guard + `subscriptions.plan` (D19). */
 function parsePlan(header: string | undefined): Plan {

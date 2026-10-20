@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { discountPercent, unitLabel, type BaseUnit } from '@slevari/shared';
+import { discountPercent, unitLabel, type BaseUnit, type PricingMode } from '@slevari/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import type { CatalogRepository, LeafletProductsQuery } from './catalog.repository';
 import type {
@@ -8,6 +8,7 @@ import type {
   LeafletProductView,
   LeafletSummary,
   OfferView,
+  ProductRecord,
 } from './catalog.types';
 
 const toDate = (iso: string): Date => new Date(`${iso}T00:00:00.000Z`);
@@ -181,6 +182,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
         unitPriceMinor: true,
         packageAmount: true,
         packageUnit: true,
+        pricingMode: true,
         scope: true,
         leaflet: { select: { validFrom: true, validTo: true } },
         chain: { select: { code: true, name: true, colorHex: true } },
@@ -206,6 +208,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
     for (const promotion of bestPerChain.values()) {
       const offers = result.get(promotion.productId) ?? [];
       offers.push({
+        productId: promotion.productId,
         chainCode: promotion.chain.code,
         chainName: promotion.chain.name,
         colorHex: promotion.chain.colorHex,
@@ -216,6 +219,7 @@ export class PrismaCatalogRepository implements CatalogRepository {
         unitLabel: unitLabel(promotion.packageUnit as BaseUnit),
         packageAmount: Number(promotion.packageAmount),
         baseUnit: promotion.packageUnit as BaseUnit,
+        pricingMode: promotion.pricingMode as PricingMode,
         validFrom: toIso(promotion.leaflet.validFrom),
         validTo: toIso(promotion.leaflet.validTo),
       });
@@ -229,5 +233,23 @@ export class PrismaCatalogRepository implements CatalogRepository {
     }
 
     return result;
+  }
+
+  async findProduct(productId: string): Promise<ProductRecord | null> {
+    if (!isUuid(productId)) return null;
+
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      select: { id: true, canonicalName: true, brand: true, category: true, baseUnit: true },
+    });
+    if (product === null) return null;
+
+    return {
+      productId: product.id,
+      name: product.canonicalName,
+      brand: product.brand,
+      category: product.category,
+      baseUnit: product.baseUnit,
+    };
   }
 }

@@ -25,23 +25,27 @@ Bez Dockeru lze DB ověřit embedded Postgresem (stáhne si binárku, nic neinst
 npm run db:verify --workspace=@slevari/api   # migrace + 2× seed + kontrola unaccent/trgm
 ```
 
-Testy (137 testů, bez DB):
+Testy (160 testů, bez DB):
 
 ```bash
 npm test
 npm run typecheck --workspaces --if-present
 ```
 
-## API (M2)
+## API (M2 + M3)
 
 | Endpoint | Popis |
 |---|---|
 | `GET /health` | liveness |
+| `POST /v1/auth/register` · `/login` · `/refresh` · `/logout` | Argon2id + JWT, rotace refresh tokenů |
 | `GET /v1/chains?activeOn=` | F1: řetězce + `hasActiveLeaflet` |
 | `GET /v1/leaflets?activeOn=&chainCode=` | F1: aktivní letáky (counts, top 3 slevy) |
 | `GET /v1/leaflets/:id/products?category=&page=&pageSize=` | F1: detail se stránkováním (max 50) |
-| `GET /v1/products/search?q=&limit=` | F2: matching (§12) + nabídky seřazené dle Kč/kg, Kč/l, Kč/ks |
-| `POST /v1/optimizer/preview` | dočasně optimalizace (FREE = Varianta A, `X-Plan: PREMIUM` = A+B) |
+| `GET /v1/products/search?q=&limit=` | F2: matching (§12) + nabídky dle Kč/kg, Kč/l, Kč/ks |
+| `GET/POST /v1/lists`, `GET/PATCH/DELETE /v1/lists/:id` | F3: seznamy s limity tarifu |
+| `POST/PATCH/DELETE /v1/lists/:id/items[/:itemId]` | F3: položky + matching, potvrzení shody |
+| `POST /v1/lists/:id/optimize` | F4: FREE = Varianta A, PREMIUM = A+B+úspora (`date`, `maxStores`, `tripPenaltyMinor`) |
+| `POST /v1/optimizer/preview` | dev preview bez DB (`X-Plan` hlavička) |
 
 ## Struktura
 

@@ -538,6 +538,7 @@ P3 (historie) MUSÍ číst denní body pro posledních 24 měsíců a měsíčn�
 - `household_invitations`: `id`, `household_id`, `email`, `token_hash` UNIQUE, `expires_at`, `used_at` NULL.
 - `subscriptions`: `id` PK, `user_id` FK UNIQUE, `plan` enum(`FREE`,`PREMIUM`) default `FREE`, `status` enum(`ACTIVE`,`PAST_DUE`,`CANCELED`), `current_period_end` timestamptz NULL, `provider` enum(`MANUAL`,`STRIPE`,`REVENUECAT`) NOT NULL default `MANUAL`, `provider_subscription_id` varchar(128) NULL (pro mapování webhooků), `updated_at` timestamptz NOT NULL. Index UNIQUE `(provider, provider_subscription_id)`. Zdroj pravdy o tarifu je vždy tento záznam (D19) — klient NIKDY nerozhoduje o plánu.
 - `push_tokens`: `id`, `user_id`, `token` UNIQUE, `platform` enum(`IOS`,`ANDROID`), `created_at`.
+- `refresh_tokens` (D23): `id` PK, `user_id` FK → users, `token_hash` char(64) UNIQUE (SHA-256, nikdy plaintext), `expires_at`, `created_at`, `revoked_at` NULL; index `(user_id)`. Rotace: při refreshi se starý token revokuje a vydá se nový pár; logout revokuje předaný token.
 
 ### 9.10 `shopping_lists` / `shopping_list_items`
 | `shopping_lists` | Typ | Omezení |
@@ -963,6 +964,8 @@ Tato sekce dokumentuje **všechna** místa, kde původní zadání nestačilo k 
 | D20 | Nebyl určen poskytovatel e-mailů (Q5) | **Resend** (transakční e-maily: reset hesla, pozvánky do domácnosti, fallback notifikací), šablony `cs-CZ`; AWS SES jen při >50 tis. e-mailů/měsíc | Nejrychlejší integrace, dobrá doručitelnost, pro MVP nulové náklady; doménu lze snadno ověřit (SPF/DKIM) |
 | D21 | Nebylo potvrzeno, zda ES patří do MVP (Q6) | **Elasticsearch primárně** (dle zadání) za `SearchPort` interfacem, **`PostgresTrgmAdapter` jako fallback** (i pro CI bez ES) | Zachovává zadání, ale odolnost vůči výpadku a testovatelnost bez ES; výměna enginu nevyžaduje změnu doménové vrstvy |
 | D22 | Nebyla určena retence historie cen (Q7) | **24 měsíců** denních bodů v `price_history_points`; starší data agregovat do `price_history_monthly` (min/avg/max unit price) a denní body mazat | Drží 2 roky srovnatelného grafu (meziroční sezóna), omezuje růst DB a odpovídá GDPR minimalizaci |
+| D23 | Spec neměla uložení refresh tokenů, ale vyžaduje refresh (30 dní) a logout | Nová tabulka `refresh_tokens` s **SHA-256 hashem** (nikdy plaintext), rotace při každém refreshi, revokace při logoutu; access token 15 min bez stavu | Umožňuje odhlášení a revokaci bez držení session na serveru; hash chrání DB při úniku |
+| D24 | `POST /v1/lists/:id/optimize` potřebuje deterministické datum (jinak se testy a demo rozcházejí s platností letáků) | Nepovinný param `date` (`YYYY-MM-DD`), default `todayInPrague()` | Akceptační kritéria i demo nad fixture (§19.3 platí 14.–20. 10.) musí být reprodukovatelná |
 
 ---
 
@@ -1082,7 +1085,10 @@ Kontrolní přepočet unit price: Kaufland máslo `4490 / 250 × 1000 = 17960` �
 | **M2** Matching pipeline §12 (normalizace, aliasy, pg_trgm kompatibilní trigramy, Damerau-Levenshtein) | ✅ 94 testů v `@slevari/shared` | `packages/shared/src/matching/*` |
 | **M2** `SearchPort` + `PostgresSearchAdapter` (word_similarity) + `ElasticSearchAdapter` + fallback (D21) | ✅ SQL ověřen na Postgresu, ES adaptér testovaný s fake klientem | `apps/api/src/catalog/*` |
 | **M2** Endpointy F1/F2: `/v1/chains`, `/v1/leaflets`, `/v1/leaflets/:id/products`, `/v1/products/search` | ✅ 43 testů API (e2e přes Supertest) | `apps/api/src/catalog/` |
-| Auth, seznamy, uložené optimalizace (M3) | ⛔ nezačato | — |
+| **M3** Auth: registrace/login/refresh/logout, Argon2id, JWT access 15 min, rotace refresh tokenů (D23) | ✅ 7 unit + e2e, live ověřeno | `apps/api/src/auth/`, migrace `0002_refresh_tokens` |
+| **M3** Seznamy v DB: CRUD, limity FREE (1 seznam/30 položek), matching položek, potvrzení shody, IDOR ochrana | ✅ unit + e2e | `apps/api/src/lists/` |
+| **M3** `POST /v1/lists/:id/optimize` nad DB: ceny z akcí, tarif ze `subscriptions`, `date` (D24), `includeVariantB` → 403 pro FREE | ✅ live: FREE A=32 710 (KAUFLAND), PREMIUM B=27 910, úspora 4 800 | `apps/api/src/lists/lists.service.ts` |
+| **M3** `subscriptions.user_id` UNIQUE (spec §9.9) | ✅ migrace `0003_subscription_user_unique` | `prisma/migrations/` |
 | `apps/web` (Next.js) | ⛔ M4 | — |
 
 **Ověřeno na Postgresu 16 (`db:verify`):** `mliko → Mléko polotučné`, `toaletak → Toaletní papír 8 rolí`, `kureci → Kuřecí prsa`; `similarity('mliko','mleko') = 0,33` (proto §12.1 prahy 0,60/0,40 + edit-distance pravidlo).

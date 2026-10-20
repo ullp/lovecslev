@@ -3,6 +3,7 @@ import type {
   LeafletDetail,
   LeafletSummary,
   OfferView,
+  ProductRecord,
   SearchCandidateRecord,
 } from './catalog.types';
 
@@ -19,6 +20,8 @@ export interface CatalogRepository {
   getLeaflet(leafletId: string, query: LeafletProductsQuery): Promise<LeafletDetail | null>;
   /** Nejnižší platná akce pro každý produkt a řetězec k danému datu (spec §11.1). */
   findOffers(productIds: readonly string[], activeOn: string): Promise<ReadonlyMap<string, readonly OfferView[]>>;
+  /** Produkt pro potvrzení shody v seznamu (spec §5 F3). */
+  findProduct(productId: string): Promise<ProductRecord | null>;
 }
 
 export const CATALOG_REPOSITORY = Symbol('CATALOG_REPOSITORY');

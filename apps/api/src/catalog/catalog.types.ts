@@ -1,4 +1,4 @@
-import type { BaseUnit } from '@slevari/shared';
+import type { BaseUnit, PricingMode } from '@slevari/shared';
 
 /** Pohledy pro API (spec §13) — peníze vždy haléře. */
 
@@ -54,6 +54,7 @@ export interface LeafletDetail {
 }
 
 export interface OfferView {
+  readonly productId: string;
   readonly chainCode: string;
   readonly chainName: string;
   readonly colorHex: string;
@@ -64,6 +65,7 @@ export interface OfferView {
   readonly unitLabel: string;
   readonly packageAmount: number;
   readonly baseUnit: BaseUnit;
+  readonly pricingMode: PricingMode;
   readonly validFrom: string;
   readonly validTo: string;
 }
@@ -75,6 +77,14 @@ export interface ProductSearchResult {
   readonly category: string;
   readonly baseUnit: BaseUnit;
   readonly offers: readonly OfferView[];
+}
+
+export interface ProductRecord {
+  readonly productId: string;
+  readonly name: string;
+  readonly brand: string | null;
+  readonly category: string;
+  readonly baseUnit: BaseUnit;
 }
 
 /** Kandidát vrácený vyhledávacím portem (rozhodnutí o shodě dělá `matchProduct`). */

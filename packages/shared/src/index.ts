@@ -9,4 +9,5 @@ export * from './import/mapper';
 export * from './matching/normalize';
 export * from './matching/similarity';
 export * from './matching/match';
+export * from './plan';
 export * from './fixtures/mvpFixture';

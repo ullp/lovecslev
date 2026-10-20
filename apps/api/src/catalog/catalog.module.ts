@@ -41,6 +41,6 @@ const searchProvider = {
     { provide: CATALOG_REPOSITORY, useClass: PrismaCatalogRepository },
     searchProvider,
   ],
-  exports: [CatalogService],
+  exports: [CatalogService, CATALOG_REPOSITORY, SEARCH_PORT],
 })
 export class CatalogModule {}

@@ -262,6 +262,7 @@ model User {
   pushTokens    PushToken[]
   subscriptions Subscription[]
   memberships   HouseholdMember[]
+  refreshTokens RefreshToken[]
   ownedHouseholds Household[] @relation("HouseholdOwner")
 
   @@map("users")
@@ -309,7 +310,7 @@ model HouseholdInvitation {
 
 model Subscription {
   id                     String               @id @default(uuid()) @db.Uuid
-  userId                 String               @map("user_id") @db.Uuid
+  userId                 String               @unique @map("user_id") @db.Uuid
   plan                   PlanKind             @default(FREE)
   status                 SubscriptionStatus   @default(ACTIVE)
   currentPeriodEnd       DateTime?            @map("current_period_end")
@@ -333,6 +334,20 @@ model PushToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("push_tokens")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  expiresAt DateTime  @map("expires_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
 
 model ShoppingList {

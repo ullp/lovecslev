@@ -4,6 +4,7 @@ import type {
   LeafletDetail,
   LeafletSummary,
   OfferView,
+  ProductRecord,
 } from '../../src/catalog/catalog.types';
 
 const CHAINS: readonly ChainView[] = [
@@ -85,6 +86,7 @@ const OFFERS: ReadonlyMap<string, readonly OfferView[]> = new Map([
     'prd_mleko',
     [
       {
+        productId: 'prd_mleko',
         chainCode: 'LIDL',
         chainName: 'Lidl',
         colorHex: '#0050AA',
@@ -95,10 +97,12 @@ const OFFERS: ReadonlyMap<string, readonly OfferView[]> = new Map([
         unitLabel: 'Kč/l',
         packageAmount: 1000,
         baseUnit: 'ML',
+        pricingMode: 'PACKAGE',
         validFrom: '2026-10-14',
         validTo: '2026-10-20',
       },
       {
+        productId: 'prd_mleko',
         chainCode: 'KAUFLAND',
         chainName: 'Kaufland',
         colorHex: '#E10915',
@@ -109,6 +113,44 @@ const OFFERS: ReadonlyMap<string, readonly OfferView[]> = new Map([
         unitLabel: 'Kč/l',
         packageAmount: 1000,
         baseUnit: 'ML',
+        pricingMode: 'PACKAGE',
+        validFrom: '2026-10-14',
+        validTo: '2026-10-20',
+      },
+    ],
+  ],
+  [
+    'prd_maslo',
+    [
+      {
+        productId: 'prd_maslo',
+        chainCode: 'LIDL',
+        chainName: 'Lidl',
+        colorHex: '#0050AA',
+        priceMinor: 5490,
+        regularPriceMinor: 5990,
+        discountPercent: 8,
+        unitPriceMinor: 21960,
+        unitLabel: 'Kč/kg',
+        packageAmount: 250,
+        baseUnit: 'G',
+        pricingMode: 'PACKAGE',
+        validFrom: '2026-10-14',
+        validTo: '2026-10-20',
+      },
+      {
+        productId: 'prd_maslo',
+        chainCode: 'KAUFLAND',
+        chainName: 'Kaufland',
+        colorHex: '#E10915',
+        priceMinor: 4490,
+        regularPriceMinor: 5490,
+        discountPercent: 18,
+        unitPriceMinor: 17960,
+        unitLabel: 'Kč/kg',
+        packageAmount: 250,
+        baseUnit: 'G',
+        pricingMode: 'PACKAGE',
         validFrom: '2026-10-14',
         validTo: '2026-10-20',
       },
@@ -158,4 +200,16 @@ export class InMemoryCatalogRepository implements CatalogRepository {
     }
     return result;
   }
+
+  async findProduct(productId: string): Promise<ProductRecord | null> {
+    this.calls.push('findProduct');
+    const product = PRODUCTS.find((entry) => entry.productId === productId);
+    return product ?? null;
+  }
 }
+
+const PRODUCTS: readonly ProductRecord[] = [
+  { productId: 'prd_mleko', name: 'Mléko polotučné', brand: 'Madeta', category: 'Mléčné výrobky', baseUnit: 'ML' },
+  { productId: 'prd_maslo', name: 'Máslo', brand: 'Madeta', category: 'Mléčné výrobky', baseUnit: 'G' },
+  { productId: 'prd_kureci_prsa', name: 'Kuřecí prsa', brand: null, category: 'Maso a ryby', baseUnit: 'G' },
+];
