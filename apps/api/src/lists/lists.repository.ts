@@ -9,7 +9,7 @@ import type {
 /** Port nad seznamy (spec §9.10) — služba nezná Prisma. */
 export interface ListsRepository {
   countLists(ownerUserId: string): Promise<number>;
-  create(input: { ownerUserId: string; name: string }): Promise<ListRecord>;
+  create(input: { ownerUserId: string; name: string; householdId: string | null }): Promise<ListRecord>;
   listSummaries(ownerUserId: string): Promise<readonly ListSummary[]>;
   find(listId: string): Promise<ListRecord | null>;
   rename(listId: string, name: string): Promise<void>;

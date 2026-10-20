@@ -87,6 +87,56 @@ export interface ProductRecord {
   readonly baseUnit: BaseUnit;
 }
 
+/** P3 — historie cen (spec §6 P3, §9.8, §9.12). */
+export interface PriceHistoryPointView {
+  /** `YYYY-MM-DD`; u měsíční agregace vždy 1. den měsíce. */
+  readonly date: string;
+  readonly granularity: 'daily' | 'monthly';
+  readonly priceMinor: number | null;
+  readonly unitPriceMinor: number;
+  readonly packageAmount: number;
+  readonly baseUnit: BaseUnit;
+}
+
+export interface PriceHistorySeries {
+  readonly chainCode: string;
+  readonly chainName: string;
+  readonly points: readonly PriceHistoryPointView[];
+  /** Data, kde se změnilo balení — graf MUSÍ přerušit linii (spec P3). */
+  readonly breaks: readonly string[];
+}
+
+export interface PriceHistoryStats {
+  readonly minUnitPriceMinor: number | null;
+  readonly maxUnitPriceMinor: number | null;
+  readonly avgUnitPriceMinor: number | null;
+  readonly lowestDate: string | null;
+  readonly lowestChainCode: string | null;
+  readonly sampleCount: number;
+}
+
+export interface PriceHistoryView {
+  readonly productId: string;
+  readonly productName: string;
+  readonly from: string;
+  readonly to: string;
+  readonly unitLabel: string;
+  readonly series: readonly PriceHistorySeries[];
+  readonly stats: PriceHistoryStats;
+}
+
+/** Řádek z DB — služba z něj skládá série. */
+export interface PriceHistoryRow {
+  readonly date: string;
+  readonly chainCode: string;
+  readonly chainName: string;
+  readonly priceMinor: number | null;
+  readonly unitPriceMinor: number;
+  readonly packageAmount: number;
+  readonly baseUnit: BaseUnit;
+  readonly granularity: 'daily' | 'monthly';
+}
+
 /** Kandidát vrácený vyhledávacím portem (rozhodnutí o shodě dělá `matchProduct`). */
 export interface SearchCandidateRecord {
   readonly productId: string;

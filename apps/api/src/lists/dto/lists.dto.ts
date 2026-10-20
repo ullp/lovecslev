@@ -19,6 +19,11 @@ export class CreateListDto {
   @IsString()
   @MaxLength(64)
   name?: string;
+
+  /** Sdílení s domácností (spec P4) — musí být členem. */
+  @IsOptional()
+  @IsUUID()
+  householdId?: string;
 }
 
 export class RenameListDto {

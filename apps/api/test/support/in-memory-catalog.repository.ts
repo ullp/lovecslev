@@ -4,6 +4,7 @@ import type {
   LeafletDetail,
   LeafletSummary,
   OfferView,
+  PriceHistoryRow,
   ProductRecord,
 } from '../../src/catalog/catalog.types';
 
@@ -206,7 +207,29 @@ export class InMemoryCatalogRepository implements CatalogRepository {
     const product = PRODUCTS.find((entry) => entry.productId === productId);
     return product ?? null;
   }
+
+  async findChainByCode(code: string): Promise<{ id: string; code: string } | null> {
+    this.calls.push('findChainByCode');
+    const chain = CHAINS.find((entry) => entry.code === code);
+    return chain === undefined ? null : { id: chain.id, code: chain.code };
+  }
+
+  async findPriceHistory(productId: string, from: string, to: string): Promise<readonly PriceHistoryRow[]> {
+    this.calls.push('findPriceHistory');
+    return HISTORY.filter((row) => row.productId === productId && row.date >= from && row.date <= to);
+  }
 }
+
+interface HistoryRow extends PriceHistoryRow {
+  readonly productId: string;
+}
+
+const HISTORY: readonly HistoryRow[] = [
+  { productId: 'prd_mleko', date: '2026-08-01', chainCode: 'LIDL', chainName: 'Lidl', priceMinor: 2190, unitPriceMinor: 2190, packageAmount: 1000, baseUnit: 'ML', granularity: 'daily' },
+  { productId: 'prd_mleko', date: '2026-09-01', chainCode: 'LIDL', chainName: 'Lidl', priceMinor: 1990, unitPriceMinor: 1990, packageAmount: 1000, baseUnit: 'ML', granularity: 'daily' },
+  { productId: 'prd_mleko', date: '2026-09-01', chainCode: 'KAUFLAND', chainName: 'Kaufland', priceMinor: 2790, unitPriceMinor: 2790, packageAmount: 1000, baseUnit: 'ML', granularity: 'daily' },
+  { productId: 'prd_mleko', date: '2026-10-01', chainCode: 'LIDL', chainName: 'Lidl', priceMinor: 3990, unitPriceMinor: 1995, packageAmount: 2000, baseUnit: 'ML', granularity: 'daily' },
+];
 
 const PRODUCTS: readonly ProductRecord[] = [
   { productId: 'prd_mleko', name: 'Mléko polotučné', brand: 'Madeta', category: 'Mléčné výrobky', baseUnit: 'ML' },

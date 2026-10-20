@@ -281,7 +281,9 @@
 **Pravidla**
 - Alert se vyhodnocuje po každém importu (job) nad platnými akcemi; nová cena ≤ práh → notifikace.
 - MUSÍ se notifikovat max 1× za 24 h na alert (`last_notified_at`) a jen při **novém** minimu, ne při každém importu.
-- Notifikace: Expo Push (`push_tokens`), e-mail jako fallback.
+- Notifikace: Expo Push (`push_tokens`), e-mail (Resend, D20) jako fallback.
+- Pokud není registrovaný žádný push token **ani** nakonfigurovaný e-mail, alert se přeskočí se stavem `NOT_CONFIGURED` (není to chyba doručení; job kvůli tomu NESMÍ selhat).
+- Job MUSÍ skončit nenulovým exit kódem jen při skutečném selhání doručení (`failed > 0`).
 - FREE: 0 alertů (`403 PLAN_LIMIT_REACHED`). PREMIUM: max 20 aktivních.
 
 ### P3 — Historie cen
@@ -297,6 +299,7 @@
 - Sdílené MUSÍ být: seznam, oblíbené produkty, alerty. Změny viditelné do 60 s (polling stačí; websocket MIMO ROZSAH).
 - Pozvánka e-mailem s jednorázovým tokenem (platnost 7 dní).
 - Odebrání člena MUSÍ okamžitě zrušit jeho přístup ke sdíleným entitám.
+- **MVP rozhodnutí (D26):** jeden uživatel = jedna domácnost; pozvánky posílá pouze `OWNER`; pozvánku lze přijmout jen s e-mailem, na který byla vystavena; seznam se sdílí vytvořením s `householdId` a členové domácnosti mají plný přístup (čtení i zápis).
 
 ---
 
@@ -745,8 +748,11 @@ Billa není kandidátem varianty A (chybí Toaletní papír).
 | POST | `/v1/lists/:id/optimize` | USER | F4: FREE = Varianta A; PREMIUM = A + B + úspora (volitelně `date`, `maxStores`, `tripPenaltyMinor`) |
 | POST | `/v1/optimizer/preview` | USER | **M0 dev endpoint** bez DB/auth: validuje DTO a volá `optimizePurchase`; tarif z hlavičky `X-Plan` (`FREE` default). V M3 ho nahradí `/v1/lists/:id/optimize` |
 | POST | `/v1/advisor/plan` | PREMIUM | P1 AI poradce |
-| GET/POST/DELETE | `/v1/alerts`, `/v1/alerts/:id` | PREMIUM | P2 hlídač cen |
-| POST | `/v1/households`, `/v1/households/:id/invitations` | PREMIUM | P4 rodinné sdílení |
+| GET/POST/DELETE | `/v1/alerts`, `/v1/alerts/:id` | PREMIUM | P2 hlídač cen (limit 20) |
+| POST | `/v1/households` · GET `/v1/households` | PREMIUM | P4 vytvoření a detail domácnosti s členy |
+| POST | `/v1/households/:id/invitations` | PREMIUM | P4 pozvánka e-mailem (jen OWNER, platnost 7 dní) |
+| POST | `/v1/households/invitations/accept` | USER | P4 přijetí pozvánky (e-mail musí odpovídat) |
+| DELETE | `/v1/households/:id/members/:userId` | PREMIUM | P4 odebrání člena (vlastníka nelze) |
 | POST | `/v1/devices/push-token` | USER | Registrace Expo push tokenu |
 | POST | `/v1/webhooks/stripe` | — | M5: Stripe webhook (ověření `Stripe-Signature`, idempotence dle `event.id`) |
 | POST | `/v1/webhooks/revenuecat` | — | M5: RevenueCat webhook (ověření `Authorization` tokenu, idempotence dle `event.id`) |
@@ -965,6 +971,8 @@ Tato sekce dokumentuje **všechna** místa, kde původní zadání nestačilo k 
 | D21 | Nebylo potvrzeno, zda ES patří do MVP (Q6) | **Elasticsearch primárně** (dle zadání) za `SearchPort` interfacem, **`PostgresTrgmAdapter` jako fallback** (i pro CI bez ES) | Zachovává zadání, ale odolnost vůči výpadku a testovatelnost bez ES; výměna enginu nevyžaduje změnu doménové vrstvy |
 | D22 | Nebyla určena retence historie cen (Q7) | **24 měsíců** denních bodů v `price_history_points`; starší data agregovat do `price_history_monthly` (min/avg/max unit price) a denní body mazat | Drží 2 roky srovnatelného grafu (meziroční sezóna), omezuje růst DB a odpovídá GDPR minimalizaci |
 | D23 | Spec neměla uložení refresh tokenů, ale vyžaduje refresh (30 dní) a logout | Nová tabulka `refresh_tokens` s **SHA-256 hashem** (nikdy plaintext), rotace při každém refreshi, revokace při logoutu; access token 15 min bez stavu | Umožňuje odhlášení a revokaci bez držení session na serveru; hash chrání DB při úniku |
+| D25 | Nebylo určeno, co dělat, když není nakonfigurovaný žádný doručovací kanál | Stav `NOT_CONFIGURED` = skip (ne failure), job vrací exit 0; `failed` jen při skutečném selhání doručení | Lokální/CI běh bez Resend klíče a push tokenů nesmí shazovat job |
+| D26 | P4 nespecifikovala počet domácností a kdo smí zvát | **1 domácnost na uživatele**, pozvánky jen `OWNER`, max 6 členů, seznam sdílený přes `householdId` s plným přístupem členů | Zjednodušuje model i UI; rozšíření na víc domácností je změna pouze v doméně |
 | D24 | `POST /v1/lists/:id/optimize` potřebuje deterministické datum (jinak se testy a demo rozcházejí s platností letáků) | Nepovinný param `date` (`YYYY-MM-DD`), default `todayInPrague()` | Akceptační kritéria i demo nad fixture (§19.3 platí 14.–20. 10.) musí být reprodukovatelná |
 
 ---
@@ -1091,6 +1099,10 @@ Kontrolní přepočet unit price: Kaufland máslo `4490 / 250 × 1000 = 17960` �
 | **M3** `subscriptions.user_id` UNIQUE (spec §9.9) | ✅ migrace `0003_subscription_user_unique` | `prisma/migrations/` |
 | **M4** `apps/web` (Next.js 14, App Router): F1 letáky + detail, F2 hledání, F3 seznamy, F4 optimalizace s paywallem, auth | ✅ `next build` prošel (6 rout), 17 testů lib vrstvy, 4 routy vrací 200 | `apps/web/` |
 | **M4** sjednocení Reactu na 18.2 kvůli duplicitním kopiím (Expo vs. Next) | ✅ `overrides` v root `package.json` | `package.json` |
+| **M5** P2 hlídač cen: CRUD, Expo push + Resend fallback, evaluační job (throttle 24 h, nové minimum, `NOT_CONFIGURED`) | ✅ 17 testů, migrace `0004`, `npm run alerts:evaluate` | `apps/api/src/alerts/`, `src/cli/evaluate-alerts.ts` |
+| **M5** P3 historie cen: denní body + měsíční agregace, přerušení při změně balení, statistiky, PREMIUM gate | ✅ 8 testů, live: 4 řetězce × 7 dní, min 1990 / max 2790 | `apps/api/src/catalog/price-history.ts`, `GET /v1/products/:id/history` |
+| **M5** P4 domácnosti: pozvánky s hashovaným tokenem (7 dní), přijetí, odebírání členů, sdílené seznamy s IDOR ochranou | ✅ 12 testů, live: pozvánka → přijetí → sdílený seznam 200 → odebrání → 404 | `apps/api/src/households/` |
+| **M5** Web UI pro premium: `/history/[productId]`, `/alerts`, `/households` | ✅ `next build` 10 rout | `apps/web/app/` |
 | `apps/web` (Next.js) | ⛔ M4 | — |
 
 **Ověřeno na Postgresu 16 (`db:verify`):** `mliko → Mléko polotučné`, `toaletak → Toaletní papír 8 rolí`, `kureci → Kuřecí prsa`; `similarity('mliko','mleko') = 0,33` (proto §12.1 prahy 0,60/0,40 + edit-distance pravidlo).

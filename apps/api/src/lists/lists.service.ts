@@ -16,6 +16,7 @@ import {
   type SearchPort,
 } from '../catalog/catalog.repository';
 import { todayInPrague } from '../common/date';
+import { HOUSEHOLD_ACCESS, type HouseholdAccess } from '../households/households.types';
 import { applyPlanGating } from '../optimizer/plan-gate';
 import type { OptimizeResponse } from '../optimizer/optimizer.types';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
@@ -59,13 +60,18 @@ export class ListsService {
     @Inject(CATALOG_REPOSITORY) private readonly catalog: CatalogRepository,
     @Inject(SEARCH_PORT) private readonly search: SearchPort,
     private readonly subscriptions: SubscriptionsService,
+    @Inject(HOUSEHOLD_ACCESS) private readonly households: HouseholdAccess,
   ) {}
 
   async list(userId: string): Promise<readonly ListSummary[]> {
     return this.lists.listSummaries(userId);
   }
 
-  async create(userId: string, name: string | undefined): Promise<ListRecord> {
+  async create(
+    userId: string,
+    name: string | undefined,
+    householdId: string | null = null,
+  ): Promise<ListRecord> {
     const plan = await this.subscriptions.getPlan(userId);
     const existing = await this.lists.countLists(userId);
     const limit = PLAN_LIMITS[plan].maxLists;
@@ -77,7 +83,18 @@ export class ListsService {
       });
     }
 
-    return this.lists.create({ ownerUserId: userId, name: name?.trim() || 'Můj nákup' });
+    if (householdId !== null) {
+      const member = await this.households.isMember(userId, householdId);
+      if (!member) {
+        throw new DomainError('NOT_FOUND', `Domácnost ${householdId} neexistuje`, { householdId });
+      }
+    }
+
+    return this.lists.create({
+      ownerUserId: userId,
+      name: name?.trim() || 'Můj nákup',
+      householdId,
+    });
   }
 
   async get(userId: string, listId: string): Promise<ListDetail> {
@@ -267,10 +284,17 @@ export class ListsService {
   private async requireList(userId: string, listId: string): Promise<ListRecord> {
     const list = await this.lists.find(listId);
     // Cizí seznam se hlásí jako neexistující (ochrana proti IDOR, spec §15.3).
-    if (list === null || list.ownerUserId !== userId) {
+    if (list === null) {
       throw new DomainError('NOT_FOUND', `Seznam ${listId} neexistuje`, { listId });
     }
-    return list;
+    if (list.ownerUserId === userId) return list;
+
+    // Sdílený seznam (P4): přístup má každý člen domácnosti.
+    if (list.householdId !== null && (await this.households.isMember(userId, list.householdId))) {
+      return list;
+    }
+
+    throw new DomainError('NOT_FOUND', `Seznam ${listId} neexistuje`, { listId });
   }
 
   private async requireItem(listId: string, itemId: string): Promise<ListItemRecord> {

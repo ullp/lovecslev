@@ -28,7 +28,7 @@ export class ListsController {
 
   @Post()
   async create(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateListDto) {
-    return { data: await this.lists.create(user.userId, dto.name) };
+    return { data: await this.lists.create(user.userId, dto.name, dto.householdId ?? null) };
   }
 
   @Get(':id')

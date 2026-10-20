@@ -160,6 +160,11 @@ export default function ListDetailPage(): JSX.Element {
               >
                 {STATUS_LABEL[item.matchStatus]}
               </span>
+              {item.productId !== null && (
+                <Link href={`/history/${item.productId}`} className="nav-link">
+                  Historie ceny
+                </Link>
+              )}
               {item.productId === null && (
                 <ConfirmButton
                   disabled={busy}

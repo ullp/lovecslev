@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from '../auth/auth.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { PrismaService } from '../prisma/prisma.service';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { CatalogController } from './catalog.controller';
 import { CATALOG_REPOSITORY, SEARCH_PORT, type SearchPort } from './catalog.repository';
 import { CatalogService } from './catalog.service';
@@ -34,7 +36,7 @@ const searchProvider = {
 };
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, AuthModule, SubscriptionsModule],
   controllers: [CatalogController],
   providers: [
     CatalogService,

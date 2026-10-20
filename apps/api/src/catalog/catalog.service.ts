@@ -1,10 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { DomainError, matchProduct, normalizeQuery, type ProductMatch } from '@slevari/shared';
+import { buildPriceHistoryView, shiftIsoDate } from './price-history';
 import { CATALOG_REPOSITORY, SEARCH_PORT, type CatalogRepository, type SearchPort } from './catalog.repository';
+import { todayInPrague } from '../common/date';
 import type {
   ChainView,
   LeafletDetail,
   LeafletSummary,
+  PriceHistoryView,
   ProductSearchResult,
   SearchCandidateRecord,
 } from './catalog.types';
@@ -51,6 +54,22 @@ export class CatalogService {
       throw new DomainError('NOT_FOUND', `Leták ${leafletId} neexistuje`, { leafletId });
     }
     return detail;
+  }
+
+  /**
+   * P3: historie jednotkových cen produktu (spec §6 P3). Volá se jen za PremiumGuardem.
+   */
+  async getPriceHistory(productId: string, rangeDays: number): Promise<PriceHistoryView> {
+    const product = await this.repository.findProduct(productId);
+    if (product === null) {
+      throw new DomainError('NOT_FOUND', `Produkt ${productId} neexistuje`, { productId });
+    }
+
+    const to = todayInPrague();
+    const from = shiftIsoDate(to, -(rangeDays - 1));
+    const rows = await this.repository.findPriceHistory(productId, from, to);
+
+    return buildPriceHistoryView(product, from, to, rows);
   }
 
   /**

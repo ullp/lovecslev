@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min, MinLength } from 'class-validator';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+const RANGE = /^\d{1,4}d?$/;
 
 export class LeafletsQueryDto {
   /** `YYYY-MM-DD`, default „dnes“ v Europe/Prague (spec §0.6). */
@@ -51,4 +52,11 @@ export class SearchQueryDto {
   @IsOptional()
   @Matches(ISO_DATE, { message: 'activeOn musí být ve formátu YYYY-MM-DD' })
   activeOn?: string;
+}
+
+export class HistoryQueryDto {
+  /** `90d` nebo `90`; default 90 dní (spec §13.2). */
+  @IsOptional()
+  @Matches(RANGE, { message: 'range musí být např. 90d' })
+  range?: string;
 }

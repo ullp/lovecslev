@@ -25,9 +25,10 @@ Bez Dockeru lze DB ověřit embedded Postgresem (stáhne si binárku, nic neinst
 
 ```bash
 npm run db:verify --workspace=@slevari/api   # migrace + 2× seed + kontrola unaccent/trgm
+npm run alerts:evaluate --workspace=@slevari/api -- --date=2026-10-20   # P2 job (volitelně datum)
 ```
 
-Testy (177 testů, bez DB):
+Testy (214 testů, bez DB):
 
 ```bash
 npm test
@@ -43,6 +44,9 @@ npm run typecheck --workspaces --if-present
 | `/search` | F2 hledání s `meta.match` a návrhy |
 | `/login` | registrace/přihlášení (JWT + refresh) |
 | `/lists` · `/lists/[id]` | F3 seznamy a položky, potvrzení shody, F4 optimalizace s paywallem |
+| `/history/[productId]` | P3 graf historie jednotkových cen + přerušení při změně balení |
+| `/alerts` | P2 hlídač cen (vytvoření, seznam, smazání) |
+| `/households` | P4 domácnost, pozvánky, přijetí tokenem, správa členů |
 
 Spuštění: `npm run dev --workspace=@slevari/web` (očekává API na `http://localhost:3000`, jde změnit přes `NEXT_PUBLIC_API_URL`).
 
@@ -59,6 +63,10 @@ Spuštění: `npm run dev --workspace=@slevari/web` (očekává API na `http://l
 | `GET/POST /v1/lists`, `GET/PATCH/DELETE /v1/lists/:id` | F3: seznamy s limity tarifu |
 | `POST/PATCH/DELETE /v1/lists/:id/items[/:itemId]` | F3: položky + matching, potvrzení shody |
 | `POST /v1/lists/:id/optimize` | F4: FREE = Varianta A, PREMIUM = A+B+úspora (`date`, `maxStores`, `tripPenaltyMinor`) |
+| `GET /v1/products/:id/history?range=90d` | P3 historie cen (PREMIUM) |
+| `GET/POST/DELETE /v1/alerts`, `/v1/alerts/:id` | P2 hlídač cen (PREMIUM, max 20) |
+| `POST /v1/devices/push-token` | registrace Expo push tokenu |
+| `POST/GET /v1/households`, `POST /v1/households/:id/invitations`, `POST /v1/households/invitations/accept`, `DELETE /v1/households/:id/members/:userId` | P4 domácnosti a sdílené seznamy (PREMIUM) |
 | `POST /v1/optimizer/preview` | dev preview bez DB (`X-Plan` hlavička) |
 
 ## Struktura

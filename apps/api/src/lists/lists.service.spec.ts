@@ -38,11 +38,18 @@ function setup(initialPlan: Plan = 'FREE') {
       return CANDIDATES;
     },
   };
-  const service = new ListsService(lists, catalog, search, subscriptions);
+  let householdMember = false;
+  const households = {
+    isMember: async () => householdMember,
+  };
+  const service = new ListsService(lists, catalog, search, subscriptions, households);
   return {
     service,
     lists,
     catalog,
+    setHouseholdMember: (value: boolean) => {
+      householdMember = value;
+    },
     setPlan: (next: Plan) => {
       plan = next;
     },
@@ -196,5 +203,32 @@ describe('ListsService — optimalizace nad DB (F4, D18)', () => {
     await expect(
       service.optimize('user-1', list.id, { includeVariantB: true }),
     ).rejects.toMatchObject({ code: 'PREMIUM_REQUIRED' });
+  });
+});
+
+describe('ListsService — sdílení domácnosti (spec P4)', () => {
+  it('seznam lze vytvořit jen pro domácnost, kde je uživatel členem', async () => {
+    const { service, setHouseholdMember } = setup('PREMIUM');
+
+    setHouseholdMember(false);
+    await expect(service.create('user-1', 'Sdílený', 'household-1')).rejects.toMatchObject({
+      code: 'NOT_FOUND',
+    });
+
+    setHouseholdMember(true);
+    const list = await service.create('user-1', 'Sdílený', 'household-1');
+    expect(list.householdId).toBe('household-1');
+  });
+
+  it('člen domácnosti vidí sdílený seznam, nečlen ne', async () => {
+    const { service, setHouseholdMember } = setup('PREMIUM');
+    setHouseholdMember(true);
+    const list = await service.create('user-1', 'Sdílený', 'household-1');
+
+    setHouseholdMember(true);
+    await expect(service.get('user-2', list.id)).resolves.toMatchObject({ id: list.id });
+
+    setHouseholdMember(false);
+    await expect(service.get('user-3', list.id)).rejects.toMatchObject({ code: 'NOT_FOUND' });
   });
 });

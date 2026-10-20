@@ -397,6 +397,8 @@ model PriceAlert {
   targetUnitPriceMinor Int       @map("target_unit_price_minor")
   isActive             Boolean   @default(true) @map("is_active")
   lastNotifiedAt       DateTime? @map("last_notified_at")
+  /// Cena, na kterou uživatel byl naposledy upozorněn — brání opakovaným notifikacím (spec P2).
+  lastNotifiedUnitPriceMinor Int? @map("last_notified_unit_price_minor")
   createdAt            DateTime  @default(now()) @map("created_at")
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)

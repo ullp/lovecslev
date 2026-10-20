@@ -177,3 +177,65 @@ export interface TokenPair {
   readonly refreshToken: string;
   readonly expiresIn: number;
 }
+
+/** P3 — historie cen (spec §6 P3). */
+export interface PriceHistoryPoint {
+  readonly date: string;
+  readonly granularity: 'daily' | 'monthly';
+  readonly priceMinor: number | null;
+  readonly unitPriceMinor: number;
+  readonly packageAmount: number;
+  readonly baseUnit: BaseUnit;
+}
+
+export interface PriceHistorySeries {
+  readonly chainCode: string;
+  readonly chainName: string;
+  readonly points: readonly PriceHistoryPoint[];
+  readonly breaks: readonly string[];
+}
+
+export interface PriceHistory {
+  readonly productId: string;
+  readonly productName: string;
+  readonly from: string;
+  readonly to: string;
+  readonly unitLabel: string;
+  readonly series: readonly PriceHistorySeries[];
+  readonly stats: {
+    readonly minUnitPriceMinor: number | null;
+    readonly maxUnitPriceMinor: number | null;
+    readonly avgUnitPriceMinor: number | null;
+    readonly lowestDate: string | null;
+    readonly lowestChainCode: string | null;
+    readonly sampleCount: number;
+  };
+}
+
+/** P2 — hlídač cen (spec §6 P2). */
+export interface PriceAlert {
+  readonly id: string;
+  readonly productId: string;
+  readonly productName: string;
+  readonly chainCode: string | null;
+  readonly targetUnitPriceMinor: number;
+  readonly isActive: boolean;
+  readonly lastNotifiedAt: string | null;
+  readonly lastNotifiedUnitPriceMinor: number | null;
+  readonly createdAt: string;
+}
+
+/** P4 — domácnost (spec §6 P4). */
+export interface HouseholdMember {
+  readonly userId: string;
+  readonly email: string;
+  readonly role: 'OWNER' | 'MEMBER';
+  readonly joinedAt: string;
+}
+
+export interface Household {
+  readonly id: string;
+  readonly name: string;
+  readonly ownerUserId: string;
+  readonly members: readonly HouseholdMember[];
+}

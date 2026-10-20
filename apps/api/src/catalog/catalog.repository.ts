@@ -3,6 +3,7 @@ import type {
   LeafletDetail,
   LeafletSummary,
   OfferView,
+  PriceHistoryRow,
   ProductRecord,
   SearchCandidateRecord,
 } from './catalog.types';
@@ -22,6 +23,10 @@ export interface CatalogRepository {
   findOffers(productIds: readonly string[], activeOn: string): Promise<ReadonlyMap<string, readonly OfferView[]>>;
   /** Produkt pro potvrzení shody v seznamu (spec §5 F3). */
   findProduct(productId: string): Promise<ProductRecord | null>;
+  /** P3: denní body + měsíční agregace v rozsahu (spec §9.8, §9.12). */
+  findPriceHistory(productId: string, from: string, to: string): Promise<readonly PriceHistoryRow[]>;
+  /** Řetězec podle kódu (P2: cílení alertu na řetězec). */
+  findChainByCode(code: string): Promise<{ id: string; code: string } | null>;
 }
 
 export const CATALOG_REPOSITORY = Symbol('CATALOG_REPOSITORY');

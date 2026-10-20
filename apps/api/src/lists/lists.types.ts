@@ -6,6 +6,7 @@ export type ListMatchMethod = 'EXACT' | 'ALIAS' | 'TRIGRAM' | 'AI' | 'USER' | 'N
 export interface ListRecord {
   readonly id: string;
   readonly ownerUserId: string;
+  readonly householdId: string | null;
   readonly name: string;
   readonly isShared: boolean;
   readonly createdAt: Date;
@@ -14,6 +15,7 @@ export interface ListRecord {
 
 export interface ListSummary {
   readonly id: string;
+  readonly householdId: string | null;
   readonly name: string;
   readonly isShared: boolean;
   readonly itemCount: number;

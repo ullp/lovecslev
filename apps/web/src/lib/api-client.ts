@@ -1,6 +1,9 @@
 import { apiRequest, apiRequestWithMeta } from './api';
 import type {
   ChainView,
+  Household,
+  PriceAlert,
+  PriceHistory,
   LeafletDetail,
   LeafletSummary,
   ListDetail,
@@ -85,4 +88,45 @@ export const api = {
       token,
       body,
     }),
+
+  history: (token: string, productId: string, range = '90d') =>
+    apiRequest<PriceHistory>(`/v1/products/${productId}/history`, { token, query: { range } }),
+
+  alerts: (token: string) => apiRequest<readonly PriceAlert[]>('/v1/alerts', { token }),
+
+  createAlert: (
+    token: string,
+    body: { productId: string; targetUnitPriceMinor: number; chainCode?: string },
+  ) => apiRequest<PriceAlert>('/v1/alerts', { method: 'POST', token, body }),
+
+  deleteAlert: (token: string, alertId: string) =>
+    apiRequest<null>(`/v1/alerts/${alertId}`, { method: 'DELETE', token }),
+
+  registerPushToken: (token: string, body: { token: string; platform: 'IOS' | 'ANDROID' }) =>
+    apiRequest<null>('/v1/devices/push-token', { method: 'POST', token, body }),
+
+  households: (token: string) => apiRequest<readonly Household[]>('/v1/households', { token }),
+
+  createHousehold: (token: string, name: string) =>
+    apiRequest<{ id: string; name: string; ownerUserId: string }>('/v1/households', {
+      method: 'POST',
+      token,
+      body: { name },
+    }),
+
+  inviteToHousehold: (token: string, householdId: string, email: string) =>
+    apiRequest<{ invitationId: string; email: string; expiresAt: string; token: string }>(
+      `/v1/households/${householdId}/invitations`,
+      { method: 'POST', token, body: { email } },
+    ),
+
+  acceptInvitation: (token: string, invitationToken: string) =>
+    apiRequest<Household>('/v1/households/invitations/accept', {
+      method: 'POST',
+      token,
+      body: { token: invitationToken },
+    }),
+
+  removeHouseholdMember: (token: string, householdId: string, userId: string) =>
+    apiRequest<null>(`/v1/households/${householdId}/members/${userId}`, { method: 'DELETE', token }),
 };

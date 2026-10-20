@@ -22,13 +22,14 @@ export class InMemoryListsRepository implements ListsRepository {
       .length;
   }
 
-  async create(input: { ownerUserId: string; name: string }): Promise<ListRecord> {
+  async create(input: { ownerUserId: string; name: string; householdId: string | null }): Promise<ListRecord> {
     const now = new Date();
     const list: ListRecord = {
       id: randomUUID(),
       ownerUserId: input.ownerUserId,
+      householdId: input.householdId,
       name: input.name,
-      isShared: false,
+      isShared: input.householdId !== null,
       createdAt: now,
       updatedAt: now,
     };
@@ -41,6 +42,7 @@ export class InMemoryListsRepository implements ListsRepository {
       .filter((list) => list.ownerUserId === ownerUserId && !this.deleted.has(list.id))
       .map((list) => ({
         id: list.id,
+        householdId: list.householdId,
         name: list.name,
         isShared: list.isShared,
         itemCount: this.items.filter((item) => item.listId === list.id).length,

@@ -28,6 +28,12 @@ export function Nav(): JSX.Element {
         <Link href="/lists" className="nav-link">
           Seznamy
         </Link>
+        <Link href="/alerts" className="nav-link">
+          Hlídač cen
+        </Link>
+        <Link href="/households" className="nav-link">
+          Domácnost
+        </Link>
         {user === null ? (
           <Link href="/login" className="nav-link">
             Přihlásit

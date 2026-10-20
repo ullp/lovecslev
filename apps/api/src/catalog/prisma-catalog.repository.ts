@@ -8,6 +8,7 @@ import type {
   LeafletProductView,
   LeafletSummary,
   OfferView,
+  PriceHistoryRow,
   ProductRecord,
 } from './catalog.types';
 
@@ -251,5 +252,68 @@ export class PrismaCatalogRepository implements CatalogRepository {
       category: product.category,
       baseUnit: product.baseUnit,
     };
+  }
+
+  async findChainByCode(code: string): Promise<{ id: string; code: string } | null> {
+    const chain = await this.prisma.chain.findFirst({
+      where: { code, isActive: true },
+      select: { id: true, code: true },
+    });
+    return chain;
+  }
+
+  async findPriceHistory(productId: string, from: string, to: string): Promise<readonly PriceHistoryRow[]> {
+    if (!isUuid(productId)) return [];
+
+    const [daily, monthly] = await Promise.all([
+      this.prisma.priceHistoryPoint.findMany({
+        where: { productId, date: { gte: toDate(from), lte: toDate(to) } },
+        orderBy: { date: 'asc' },
+        select: {
+          date: true,
+          priceMinor: true,
+          unitPriceMinor: true,
+          packageAmount: true,
+          packageUnit: true,
+          chain: { select: { code: true, name: true } },
+        },
+      }),
+      this.prisma.priceHistoryMonthly.findMany({
+        where: { productId, month: { gte: toDate(from), lte: toDate(to) } },
+        orderBy: { month: 'asc' },
+        select: {
+          month: true,
+          avgUnitPriceMinor: true,
+          chain: { select: { code: true, name: true } },
+        },
+      }),
+    ]);
+
+    const rows: PriceHistoryRow[] = daily.map((point) => ({
+      date: toIso(point.date),
+      chainCode: point.chain.code,
+      chainName: point.chain.name,
+      priceMinor: point.priceMinor,
+      unitPriceMinor: point.unitPriceMinor,
+      packageAmount: Number(point.packageAmount),
+      baseUnit: point.packageUnit as BaseUnit,
+      granularity: 'daily',
+    }));
+
+    for (const point of monthly) {
+      rows.push({
+        date: toIso(point.month),
+        chainCode: point.chain.code,
+        chainName: point.chain.name,
+        priceMinor: null,
+        unitPriceMinor: point.avgUnitPriceMinor,
+        // Agregát nemá balení; 0 znamená „neznámé“ a nesmí vytvořit break.
+        packageAmount: 0,
+        baseUnit: 'PCS',
+        granularity: 'monthly',
+      });
+    }
+
+    return rows;
   }
 }

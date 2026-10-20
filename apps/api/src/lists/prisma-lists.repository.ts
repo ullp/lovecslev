@@ -7,6 +7,7 @@ import type { AddItemInput, ListItemRecord, ListRecord, ListSummary } from './li
 const LIST_SELECT = {
   id: true,
   ownerUserId: true,
+  householdId: true,
   name: true,
   isShared: true,
   createdAt: true,
@@ -34,9 +35,14 @@ export class PrismaListsRepository implements ListsRepository {
     return this.prisma.shoppingList.count({ where: { ownerUserId, deletedAt: null } });
   }
 
-  async create(input: { ownerUserId: string; name: string }): Promise<ListRecord> {
+  async create(input: { ownerUserId: string; name: string; householdId: string | null }): Promise<ListRecord> {
     return this.prisma.shoppingList.create({
-      data: { ownerUserId: input.ownerUserId, name: input.name },
+      data: {
+        ownerUserId: input.ownerUserId,
+        name: input.name,
+        householdId: input.householdId,
+        isShared: input.householdId !== null,
+      },
       select: LIST_SELECT,
     });
   }
@@ -50,6 +56,7 @@ export class PrismaListsRepository implements ListsRepository {
 
     return lists.map((list) => ({
       id: list.id,
+      householdId: list.householdId,
       name: list.name,
       isShared: list.isShared,
       itemCount: list._count.items,
