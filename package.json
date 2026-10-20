@@ -1,0 +1,17 @@
+{
+  "name": "slevarikoleme",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Slevaři kolem mě — agregátor letáků a optimalizace nákupu (spec: dev/requirement-base-doc.md)",
+  "license": "UNLICENSED",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
