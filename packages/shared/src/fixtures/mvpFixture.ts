@@ -124,6 +124,16 @@ export const LEAFLET_PERIOD = { validFrom: '2026-10-14', validTo: '2026-10-20' }
 
 export const CHAINS: readonly ChainCode[] = ['LIDL', 'ALBERT', 'KAUFLAND', 'BILLA'];
 
+/** Spec §19.2 — aliasy (normalizované: lowercase, bez diakritiky) pro matching §12. */
+export const PRODUCT_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  prd_mleko: ['mliko', 'mleko', 'mleko polotucne'],
+  prd_maslo: ['maslo'],
+  prd_kureci_prsa: ['kureci prsa', 'kureci prsicka'],
+  prd_banany: ['banany'],
+  prd_toaletni_papir: ['toaletak', 'toaletni papir', 'papir'],
+  prd_coca_cola: ['coca cola', 'cocacola'],
+};
+
 /** Spec §19.6 — očekávané hodnoty, na kterých stojí golden testy. */
 export const EXPECTED = {
   lineCosts: {

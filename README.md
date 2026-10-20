@@ -25,12 +25,23 @@ Bez Dockeru lze DB ověřit embedded Postgresem (stáhne si binárku, nic neinst
 npm run db:verify --workspace=@slevari/api   # migrace + 2× seed + kontrola unaccent/trgm
 ```
 
-Testy (103 testů, bez DB):
+Testy (137 testů, bez DB):
 
 ```bash
 npm test
 npm run typecheck --workspaces --if-present
 ```
+
+## API (M2)
+
+| Endpoint | Popis |
+|---|---|
+| `GET /health` | liveness |
+| `GET /v1/chains?activeOn=` | F1: řetězce + `hasActiveLeaflet` |
+| `GET /v1/leaflets?activeOn=&chainCode=` | F1: aktivní letáky (counts, top 3 slevy) |
+| `GET /v1/leaflets/:id/products?category=&page=&pageSize=` | F1: detail se stránkováním (max 50) |
+| `GET /v1/products/search?q=&limit=` | F2: matching (§12) + nabídky seřazené dle Kč/kg, Kč/l, Kč/ks |
+| `POST /v1/optimizer/preview` | dočasně optimalizace (FREE = Varianta A, `X-Plan: PREMIUM` = A+B) |
 
 ## Struktura
 

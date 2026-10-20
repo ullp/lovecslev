@@ -174,7 +174,7 @@
 3. Řadí se pouze nabídky se **shodnou base unit**; pokud produkt existuje v `G` i `PCS`, MUSÍ se vrátit jako oddělené skupiny s labelem jednotky (nikdy nesrovnávat Kč/kg s Kč/ks).
 4. „Nejlevnější“ MUSÍ být určeno z `unitPriceMinor`, ne z absolutní ceny balení. Absolutní cena (`priceMinor`) je v odpovědi také, ale jen jako doplňková informace.
 5. Prázdný/1znakový dotaz MUSÍ vrátit `400 VALIDATION_ERROR` a nesmí zatížit ES.
-6. Pokud dotaz nic nenajde: `200` s `data: []` a `meta.suggestions` (top 3 trigram kandidáti).
+6. Pokud dotaz nic nenajde: `200` s `data: []` a `meta.suggestions` (max 3 kandidáti nad prahem 0,20; když žádný práh nepřekročí, je pole prázdné).
 
 **Příklad odpovědi** (fixture §19, dotaz „kuřecí prsa“)
 ```json
@@ -210,7 +210,7 @@
 **Pravidla**
 1. Seznam MUSÍ mít `name` (default „Můj nákup“) a MUSÍ být perzistentní mezi zařízeními (server, ne pouze lokálně).
 2. Položka MUSÍ obsahovat: `rawText` (co uživatel napsal), `quantityBase` (množství v base unit), `productId` (nullable) a `matchStatus`.
-3. `matchStatus` ∈ `RESOLVED_AUTO` (deterministická shoda ≥ 0.85), `RESOLVED_CONFIRMED` (potvrdil uživatel), `SUGGESTED` (shoda 0.30–0.85, čeká na potvrzení), `UNRESOLVED` (nic nenalezeno).
+3. `matchStatus` ∈ `RESOLVED_AUTO` (dle §12.1: exact/alias 1.00, edit-distance 0.90, `word_similarity ≥ 0.60`), `RESOLVED_CONFIRMED` (potvrdil uživatel), `SUGGESTED` (`word_similarity 0.40–0.60`, čeká na potvrzení), `UNRESOLVED` (pod 0.40 — nic nenalezeno).
 4. Volný text MUSÍ být okamžitě uložen i bez shody — uživatel nikdy nesmí být blokován.
 5. Výchozí `quantityBase` při vložení textu = 1 balení produktu; pro `WEIGHT` produkty = 1000 g (1 kg). Uživatel MŮŽE množství změnit (g/ml/ks).
 6. FREE limit: **1 seznam**, max **30 položek**. PREMIUM: neomezeno. Překročení MUSÍ vrátit `403 PLAN_LIMIT_REACHED` (vynuceno na serveru).
@@ -679,11 +679,20 @@ Billa není kandidátem varianty A (chybí Toaletní papír).
 1. **Normalizace dotazu:** trim, lower, odstranění diakritiky (`unaccent`), sjednocení mezer, odstranění interpunkce, sjednocení zápisu jednotek (`1,5l` → `1.5 l`).
 2. **Exact match** na `products.canonical_name` → `confidence = 1.00`, `method = EXACT`.
 3. **Alias match** na `product_aliases.alias` → `1.00`, `method = ALIAS` (např. `toaletak` → `Toaletní papír 8 rolí`, `coca cola` → `Coca-Cola Original 1.5 l`).
-4. **Trigram fuzzy** (pg_trgm) — `method = TRIGRAM`, `confidence = similarity(normalizedQuery, search_text)`.
-   - Prahy: `≥ 0.60` → `RESOLVED_AUTO`, `0.35–0.60` → `SUGGESTED`, `< 0.35` → `UNRESOLVED`.
-   - **Změřená realita (Postgres 16, pg_trgm):** `similarity('mliko','mleko') = 0.33`, `similarity('toaletak','toaletni papir') ≈ 0.35`. Proto samotný trigram na krátké překlepy NESTAČÍ.
-   - **Pravidlo pro krátké tokeny:** pro slova do 6 znaků se navíc počítá Damerau-Levenshteinova vzdálenost; `distance = 1` na tokenu délky ≥ 4 → `RESOLVED_AUTO` s `confidence = 0.90`, `method = TRIGRAM`.
-   - Tento krok MUSÍ řešit překlepy (`mliko` → `mleko`, `mleko` → `Mléko polotučné`) **bez LLM**.
+4. **Trigram fuzzy** — kandidáty hledá DB přes `word_similarity(normalizedQuery, search_text)` (pg_trgm); rozhodnutí o shodě dělá čistá funkce v `@slevari/shared`.
+   - Prahy: `word_similarity ≥ 0.60` → `RESOLVED_AUTO`, `0.40–0.60` → `SUGGESTED`, `< 0.40` → `UNRESOLVED`.
+   - **Změřené hodnoty (Postgres 16, pg_trgm) — závazné pro testy:**
+
+     | query | text | `similarity` | `word_similarity` |
+     |---|---|---|---|
+     | `mliko` | `mleko` | 0.333 | 0.333 |
+     | `mliko` | `mleko polotucne madeta` | 0.120 | 0.333 |
+     | `toaletak` | `toaletni papir 8 roli` | 0.240 | **0.667** |
+     | `coca cola` | `coca-cola original 1.5 l` | 0.348 | **1.000** |
+     | `maslo` | `maslo madeta` | 0.545 | **1.000** |
+
+   - **Pravidlo pro krátké tokeny:** pro slova délky 4–6 znaků se navíc počítá Damerau-Levenshteinova vzdálenost; `distance = 1` → `RESOLVED_AUTO` s `confidence = 0.90`, `method = TRIGRAM`. Tím je pokryt překlep `mliko` → `mleko` (word_similarity 0,333 by sám nestačil).
+   - `similarity` (celořetězcová) NESMÍ být použita pro rozhodování o shodě — u delších názvů padá pod 0,25.
 5. **LLM fallback** (jen PREMIUM, jen pokud kroky 2–4 selhaly a jen pro matching, ne pro ceny):
    - Vstup: dotaz + top 5 kandidátů z DB. Výstup: striktní JSON `{ "productId": string | null, "confidence": number, "reason": string }`.
    - Aplikuje se pouze při `confidence ≥ 0.85` a pouze na existující `productId`. Nikdy se nevytváří produkt.
@@ -1068,10 +1077,15 @@ Kontrolní přepočet unit price: Kaufland máslo `4490 / 250 × 1000 = 17960` �
 | API testy (unit + e2e přes Supertest, včetně paywallu D18 a mapování doménových chyb) | ✅ 25 testů | `apps/api/src/**/*.spec.ts`, `apps/api/test/*.e2e-spec.ts` |
 | **M1** Postgres schéma (§9) + migrace `0001_init` (CHECKy, `search_text` GENERATED, GIN trgm, partial unique) | ✅ hotovo, aplikováno na Postgres 16 | `apps/api/prisma/` |
 | **M1** Validace importu §14.2 + mapper + checksum + idempotence + quarantine | ✅ hotovo | `packages/shared/src/import/*`, `apps/api/src/import/*` |
-| **M1** Seed data (`@slevari/seed-data`) + CLI `npm run seed` | ✅ hotovo: 9 řetězců, 4 letáky, 22 akcí, 6 produktů, 154 bodů historie | `packages/seed-data/`, `apps/api/src/cli/seed.ts` |
+| **M1** Seed data (`@slevari/seed-data`) + CLI `npm run seed` | ✅ hotovo: 9 řetězců, 4 letáky, 22 akcí, 6 produktů, 154 bodů historie, 12 aliasů | `packages/seed-data/`, `apps/api/src/cli/seed.ts` |
 | Ověření DB bez Dockeru (`embedded-postgres`, 2× seed = idempotence) | ✅ `npm run db:verify --workspace=@slevari/api` | `apps/api/scripts/verify-db.mjs` |
+| **M2** Matching pipeline §12 (normalizace, aliasy, pg_trgm kompatibilní trigramy, Damerau-Levenshtein) | ✅ 94 testů v `@slevari/shared` | `packages/shared/src/matching/*` |
+| **M2** `SearchPort` + `PostgresSearchAdapter` (word_similarity) + `ElasticSearchAdapter` + fallback (D21) | ✅ SQL ověřen na Postgresu, ES adaptér testovaný s fake klientem | `apps/api/src/catalog/*` |
+| **M2** Endpointy F1/F2: `/v1/chains`, `/v1/leaflets`, `/v1/leaflets/:id/products`, `/v1/products/search` | ✅ 43 testů API (e2e přes Supertest) | `apps/api/src/catalog/` |
+| Auth, seznamy, uložené optimalizace (M3) | ⛔ nezačato | — |
 | `apps/web` (Next.js) | ⛔ M4 | — |
-| Auth, seznamy, endpointy F1–F5 (M3) | ⛔ nezačato | — |
+
+**Ověřeno na Postgresu 16 (`db:verify`):** `mliko → Mléko polotučné`, `toaletak → Toaletní papír 8 rolí`, `kureci → Kuřecí prsa`; `similarity('mliko','mleko') = 0,33` (proto §12.1 prahy 0,60/0,40 + edit-distance pravidlo).
 
 **Zjištění z M1 (zapsáno do §12.1):** reálné pg_trgm `similarity('mliko','mleko') = 0,33` — původní předpoklad „≈0,8“ byl chybný, proto jsou prahy nastavené na 0,60/0,35 a pro krátké tokeny platí pravidlo edit-distance ≤ 1.
 

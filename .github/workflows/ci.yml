@@ -50,5 +50,9 @@ jobs:
       - run: npm ci
       - run: npm run build --workspace=@slevari/shared
       - run: npm run build --workspace=@slevari/seed-data
-      - name: Apply migrations, seed twice, verify counts
+      - run: npm run db:generate --workspace=@slevari/api
+        env:
+          DATABASE_URL: postgresql://slevari:slevari@localhost:5432/slevari
+      - run: npm run build --workspace=@slevari/api
+      - name: Apply migrations, seed twice, verify counts + SQL search
         run: npm run db:verify --workspace=@slevari/api

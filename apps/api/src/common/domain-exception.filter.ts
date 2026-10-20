@@ -11,7 +11,9 @@ export class DomainExceptionFilter implements ExceptionFilter {
   catch(exception: DomainError, host: ArgumentsHost): void {
     const response = host.switchToHttp().getResponse<Response>();
 
-    response.status(400).json({
+    const status = exception.code === 'NOT_FOUND' ? 404 : 400;
+
+    response.status(status).json({
       error: {
         code: exception.code,
         message: exception.message,

@@ -12,7 +12,7 @@ import type {
   StoredLeaflet,
   WriteResult,
 } from './leaflet.repository';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 const toDate = (iso: string): Date => new Date(`${iso}T00:00:00.000Z`);
 

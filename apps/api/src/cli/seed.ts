@@ -7,11 +7,39 @@
  * Spuštění: npm run seed --workspace=@slevari/api   (vyžaduje DATABASE_URL + migrace)
  */
 import 'reflect-metadata';
+import { PRODUCT_ALIASES, PRODUCTS } from '@slevari/shared';
 import { leaflets } from '@slevari/seed-data';
 import { CHAIN_SEED } from '../import/chain-seed';
 import { LeafletImportService } from '../import/leaflet-import.service';
 import { PrismaLeafletRepository } from '../import/prisma-leaflet.repository';
-import { PrismaService } from '../import/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
+
+/** Aliasy ze spec §19.2 — nutné pro deterministické hovorové shody (toaleťák → toaletní papír). */
+async function seedAliases(prisma: PrismaService): Promise<number> {
+  let upserted = 0;
+
+  for (const [productId, aliases] of Object.entries(PRODUCT_ALIASES)) {
+    const meta = PRODUCTS[productId];
+    if (meta === undefined) continue;
+
+    const product = await prisma.product.findFirst({
+      where: { canonicalName: meta.canonicalName, brand: meta.brand },
+      select: { id: true },
+    });
+    if (product === null) continue;
+
+    for (const alias of aliases) {
+      await prisma.productAlias.upsert({
+        where: { productId_alias: { productId: product.id, alias } },
+        create: { productId: product.id, alias, source: 'SEED' },
+        update: {},
+      });
+      upserted += 1;
+    }
+  }
+
+  return upserted;
+}
 
 async function main(): Promise<void> {
   const prisma = new PrismaService();
@@ -33,8 +61,9 @@ async function main(): Promise<void> {
 
     const service = new LeafletImportService(new PrismaLeafletRepository(prisma));
     const report = await service.importLeaflets(leaflets, { source: 'SEED' });
+    const aliasesSeeded = await seedAliases(prisma);
 
-    console.log(JSON.stringify(report, null, 2));
+    console.log(JSON.stringify({ ...report, aliasesSeeded }, null, 2));
 
     if (report.errors.length > 0) {
       process.exitCode = 1;

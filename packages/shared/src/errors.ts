@@ -7,7 +7,9 @@ export type DomainErrorCode =
   | 'INVALID_PRICE'
   | 'INVALID_QUANTITY'
   | 'INVALID_PACKAGE_AMOUNT'
-  | 'INVALID_OPTIMIZER_INPUT';
+  | 'INVALID_OPTIMIZER_INPUT'
+  | 'VALIDATION_ERROR'
+  | 'NOT_FOUND';
 
 export class DomainError extends Error {
   readonly code: DomainErrorCode;

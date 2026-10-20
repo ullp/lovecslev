@@ -1,0 +1,161 @@
+import type { CatalogRepository, LeafletProductsQuery } from '../../src/catalog/catalog.repository';
+import type {
+  ChainView,
+  LeafletDetail,
+  LeafletSummary,
+  OfferView,
+} from '../../src/catalog/catalog.types';
+
+const CHAINS: readonly ChainView[] = [
+  { id: 'chain-lidl', code: 'LIDL', name: 'Lidl', colorHex: '#0050AA', isMvp: true, hasActiveLeaflet: true },
+  { id: 'chain-kaufland', code: 'KAUFLAND', name: 'Kaufland', colorHex: '#E10915', isMvp: true, hasActiveLeaflet: true },
+  { id: 'chain-penny', code: 'PENNY', name: 'Penny Market', colorHex: '#C8102E', isMvp: false, hasActiveLeaflet: false },
+];
+
+const LEAFLETS: readonly LeafletSummary[] = [
+  {
+    id: 'leaflet-lidl',
+    chainCode: 'LIDL',
+    chainName: 'Lidl',
+    colorHex: '#0050AA',
+    title: 'Leták LIDL 2026-10-14 – 2026-10-20',
+    validFrom: '2026-10-14',
+    validTo: '2026-10-20',
+    productCount: 5,
+    promotionCount: 5,
+    topDiscounts: [20, 17, 13],
+  },
+  {
+    id: 'leaflet-kaufland',
+    chainCode: 'KAUFLAND',
+    chainName: 'Kaufland',
+    colorHex: '#E10915',
+    title: 'Leták KAUFLAND 2026-10-14 – 2026-10-20',
+    validFrom: '2026-10-14',
+    validTo: '2026-10-20',
+    productCount: 6,
+    promotionCount: 6,
+    topDiscounts: [22],
+  },
+];
+
+const LEAFLET_DETAIL: LeafletDetail = {
+  id: 'leaflet-lidl',
+  chainCode: 'LIDL',
+  chainName: 'Lidl',
+  title: 'Leták LIDL 2026-10-14 – 2026-10-20',
+  validFrom: '2026-10-14',
+  validTo: '2026-10-20',
+  page: 1,
+  pageSize: 20,
+  total: 2,
+  categories: ['Mléčné výrobky', 'Maso a ryby'],
+  products: [
+    {
+      productId: 'prd_mleko',
+      name: 'Mléko polotučné',
+      brand: 'Madeta',
+      category: 'Mléčné výrobky',
+      priceMinor: 1990,
+      regularPriceMinor: 2490,
+      discountPercent: 20,
+      unitPriceMinor: 1990,
+      unitLabel: 'Kč/l',
+      packageAmount: 1000,
+      baseUnit: 'ML',
+    },
+    {
+      productId: 'prd_kureci_prsa',
+      name: 'Kuřecí prsa',
+      brand: null,
+      category: 'Maso a ryby',
+      priceMinor: 12900,
+      regularPriceMinor: 14900,
+      discountPercent: 13,
+      unitPriceMinor: 12900,
+      unitLabel: 'Kč/kg',
+      packageAmount: 1000,
+      baseUnit: 'G',
+    },
+  ],
+};
+
+const OFFERS: ReadonlyMap<string, readonly OfferView[]> = new Map([
+  [
+    'prd_mleko',
+    [
+      {
+        chainCode: 'LIDL',
+        chainName: 'Lidl',
+        colorHex: '#0050AA',
+        priceMinor: 1990,
+        regularPriceMinor: 2490,
+        discountPercent: 20,
+        unitPriceMinor: 1990,
+        unitLabel: 'Kč/l',
+        packageAmount: 1000,
+        baseUnit: 'ML',
+        validFrom: '2026-10-14',
+        validTo: '2026-10-20',
+      },
+      {
+        chainCode: 'KAUFLAND',
+        chainName: 'Kaufland',
+        colorHex: '#E10915',
+        priceMinor: 2790,
+        regularPriceMinor: 2990,
+        discountPercent: 7,
+        unitPriceMinor: 2790,
+        unitLabel: 'Kč/l',
+        packageAmount: 1000,
+        baseUnit: 'ML',
+        validFrom: '2026-10-14',
+        validTo: '2026-10-20',
+      },
+    ],
+  ],
+]);
+
+/** In-memory katalog pro testy služby a e2e (bez DB). */
+export class InMemoryCatalogRepository implements CatalogRepository {
+  readonly calls: string[] = [];
+
+  async listChains(): Promise<readonly ChainView[]> {
+    this.calls.push('listChains');
+    return CHAINS;
+  }
+
+  async listLeaflets(_activeOn: string, chainCode?: string): Promise<readonly LeafletSummary[]> {
+    this.calls.push('listLeaflets');
+    return chainCode === undefined ? LEAFLETS : LEAFLETS.filter((leaflet) => leaflet.chainCode === chainCode);
+  }
+
+  async getLeaflet(leafletId: string, query: LeafletProductsQuery): Promise<LeafletDetail | null> {
+    this.calls.push('getLeaflet');
+    if (leafletId !== 'leaflet-lidl') return null;
+
+    const filtered =
+      query.category === undefined
+        ? LEAFLET_DETAIL.products
+        : LEAFLET_DETAIL.products.filter((product) => product.category === query.category);
+    const start = (query.page - 1) * query.pageSize;
+
+    return {
+      ...LEAFLET_DETAIL,
+      page: query.page,
+      pageSize: query.pageSize,
+      total: filtered.length,
+      products: filtered.slice(start, start + query.pageSize),
+    };
+  }
+
+  async findOffers(productIds: readonly string[]): Promise<ReadonlyMap<string, readonly OfferView[]>> {
+    this.calls.push('findOffers');
+    const result = new Map<string, readonly OfferView[]>();
+    for (const productId of productIds) {
+      const offers = OFFERS.get(productId);
+      if (offers !== undefined) result.set(productId, offers);
+    }
+    return result;
+  }
+}

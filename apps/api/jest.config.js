@@ -4,5 +4,6 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src', '<rootDir>/test'],
   testMatch: ['**/*.spec.ts', '**/*.e2e-spec.ts'],
+  setupFiles: ['<rootDir>/test/setup-env.ts'],
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.spec.ts', '!src/main.ts'],
 };

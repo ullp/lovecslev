@@ -6,4 +6,7 @@ export * from './optimizer';
 export * from './import/types';
 export * from './import/validator';
 export * from './import/mapper';
+export * from './matching/normalize';
+export * from './matching/similarity';
+export * from './matching/match';
 export * from './fixtures/mvpFixture';

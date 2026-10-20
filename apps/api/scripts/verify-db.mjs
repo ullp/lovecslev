@@ -54,7 +54,16 @@ try {
   // pg_trgm musí být nainstalovaný a index použitelný.
   const trigram = await prisma.$queryRaw`SELECT similarity('mliko', 'mleko') AS score`;
 
+  // Reálný SQL adaptér (word_similarity + unaccent) — ověření, že dotazy nic netipují.
+  const { PostgresSearchAdapter } = await import('../dist/catalog/search.adapters.js');
+  const search = new PostgresSearchAdapter(prisma);
+  const typo = await search.findCandidates('mliko', 5);
+  const slang = await search.findCandidates('toaletak', 5);
+  const exactWord = await search.findCandidates('kureci', 5);
+
   await prisma.$disconnect();
+
+  const found = (rows) => rows.map((row) => row.canonicalName);
 
   const result = {
     chains,
@@ -65,16 +74,27 @@ try {
     aliases,
     unaccentHits: withoutDiacritics.length,
     trigramScore: Number(trigram[0]?.score ?? 0).toFixed(2),
+    search: {
+      mliko: found(typo),
+      toaletak: found(slang),
+      kureci: found(exactWord),
+    },
   };
   console.log('\n--- stav DB ---');
   console.log(JSON.stringify(result, null, 2));
 
-  const expected = { chains: 9, leaflets: 4, promotions: 22, products: 6, priceHistory: 154 };
+  const expected = { chains: 9, leaflets: 4, promotions: 22, products: 6, priceHistory: 154, aliases: 12 };
   const mismatches = Object.entries(expected).filter(([key, value]) => result[key] !== value);
-  if (mismatches.length > 0 || result.unaccentHits === 0) {
-    throw new Error(`Ověření selhalo: ${JSON.stringify({ mismatches, result })}`);
+  const searchProblems = [
+    result.search.mliko.includes('Mléko polotučné') ? null : 'mliko nenalezeno',
+    result.search.toaletak.includes('Toaletní papír 8 rolí') ? null : 'toaletak nenalezeno',
+    result.search.kureci.includes('Kuřecí prsa') ? null : 'kureci nenalezeno',
+  ].filter(Boolean);
+
+  if (mismatches.length > 0 || result.unaccentHits === 0 || searchProblems.length > 0) {
+    throw new Error(`Ověření selhalo: ${JSON.stringify({ mismatches, searchProblems, result })}`);
   }
-  console.log('\nDB VERIFY: OK (migrace + 2× idempotentní seed + unaccent + pg_trgm)');
+  console.log('\nDB VERIFY: OK (migrace + 2× idempotentní seed + unaccent + pg_trgm + SQL search)');
 } finally {
   await pg.stop();
 }

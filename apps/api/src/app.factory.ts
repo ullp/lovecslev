@@ -4,12 +4,10 @@ import { AppModule } from './app.module';
 import { DomainExceptionFilter } from './common/domain-exception.filter';
 
 /**
- * Jediná továrna na aplikaci — používají ji main.ts i e2e testy,
+ * Společná konfigurace aplikace — používají ji main.ts i e2e testy,
  * aby se globální pipes/filtry nemohly rozejít (spec §8.4).
  */
-export async function createApp(): Promise<INestApplication> {
-  const app = await NestFactory.create(AppModule, { logger: false });
-
+export function configureApp(app: INestApplication): INestApplication {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -18,6 +16,10 @@ export async function createApp(): Promise<INestApplication> {
     }),
   );
   app.useGlobalFilters(new DomainExceptionFilter());
-
   return app;
+}
+
+export async function createApp(): Promise<INestApplication> {
+  const app = await NestFactory.create(AppModule, { logger: false });
+  return configureApp(app);
 }
