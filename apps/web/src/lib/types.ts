@@ -239,3 +239,18 @@ export interface Household {
   readonly ownerUserId: string;
   readonly members: readonly HouseholdMember[];
 }
+
+/** F5 — prodejna v okolí (spec §5 F5). */
+export interface StoreNearby {
+  readonly id: string;
+  readonly name: string;
+  readonly address: string;
+  readonly city: string;
+  readonly chainCode: string;
+  readonly chainName: string;
+  readonly colorHex: string;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly distanceMeters: number;
+  readonly hasActiveLeaflet: boolean;
+}

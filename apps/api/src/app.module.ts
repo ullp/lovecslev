@@ -7,6 +7,7 @@ import { HouseholdsModule } from './households/households.module';
 import { ListsModule } from './lists/lists.module';
 import { OptimizerModule } from './optimizer/optimizer.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { StoresModule } from './stores/stores.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PrismaModule } from './prisma/prisma.module';
     ListsModule,
     AlertsModule,
     HouseholdsModule,
+    StoresModule,
   ],
   controllers: [HealthController],
 })

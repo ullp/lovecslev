@@ -28,7 +28,7 @@ npm run db:verify --workspace=@slevari/api   # migrace + 2× seed + kontrola una
 npm run alerts:evaluate --workspace=@slevari/api -- --date=2026-10-20   # P2 job (volitelně datum)
 ```
 
-Testy (214 testů, bez DB):
+Testy (217 testů, bez DB):
 
 ```bash
 npm test
@@ -47,6 +47,7 @@ npm run typecheck --workspaces --if-present
 | `/history/[productId]` | P3 graf historie jednotkových cen + přerušení při změně balení |
 | `/alerts` | P2 hlídač cen (vytvoření, seznam, smazání) |
 | `/households` | P4 domácnost, pozvánky, přijetí tokenem, správa členů |
+| `/stores` | F5 mapa (OpenStreetMap) + prodejny v okolí s vzdálenostmi |
 
 Spuštění: `npm run dev --workspace=@slevari/web` (očekává API na `http://localhost:3000`, jde změnit přes `NEXT_PUBLIC_API_URL`).
 
@@ -64,6 +65,7 @@ Spuštění: `npm run dev --workspace=@slevari/web` (očekává API na `http://l
 | `POST/PATCH/DELETE /v1/lists/:id/items[/:itemId]` | F3: položky + matching, potvrzení shody |
 | `POST /v1/lists/:id/optimize` | F4: FREE = Varianta A, PREMIUM = A+B+úspora (`date`, `maxStores`, `tripPenaltyMinor`) |
 | `GET /v1/products/:id/history?range=90d` | P3 historie cen (PREMIUM) |
+| `GET /v1/stores/nearby?lat=&lng=&radiusKm=` | F5 prodejny v okolí (haversine, `hasActiveLeaflet`) |
 | `GET/POST/DELETE /v1/alerts`, `/v1/alerts/:id` | P2 hlídač cen (PREMIUM, max 20) |
 | `POST /v1/devices/push-token` | registrace Expo push tokenu |
 | `POST/GET /v1/households`, `POST /v1/households/:id/invitations`, `POST /v1/households/invitations/accept`, `DELETE /v1/households/:id/members/:userId` | P4 domácnosti a sdílené seznamy (PREMIUM) |
@@ -75,7 +77,7 @@ Spuštění: `npm run dev --workspace=@slevari/web` (očekává API na `http://l
 apps/
   api/       NestJS 10 — health, POST /v1/optimizer/preview, Prisma schéma + migrace, import CLI
              prisma/schema.prisma (16 modelů dle §9), prisma/migrations/0001_init
-  mobile/    Expo 51 — demo obrazovka nad @slevari/shared
+  mobile/    Expo 51 — F1 letáky, F2 hledání, F5 prodejny (EXPO_PUBLIC_API_URL)
 packages/
   shared/    doménové jádro: money, units, pricing, optimizer, import (validace/mapper) + fixture §19
   seed-data/ referenční letáky (§19) generované z fixture, `npm run build` je přegeneruje

@@ -11,3 +11,4 @@ export * from './matching/similarity';
 export * from './matching/match';
 export * from './plan';
 export * from './fixtures/mvpFixture';
+export * from './fixtures/stores';

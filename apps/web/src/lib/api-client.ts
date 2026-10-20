@@ -4,6 +4,7 @@ import type {
   Household,
   PriceAlert,
   PriceHistory,
+  StoreNearby,
   LeafletDetail,
   LeafletSummary,
   ListDetail,
@@ -87,6 +88,16 @@ export const api = {
       method: 'POST',
       token,
       body,
+    }),
+
+  storesNearby: (params: { lat: number; lng: number; radiusKm?: number; activeOn?: string }) =>
+    apiRequest<readonly StoreNearby[]>('/v1/stores/nearby', {
+      query: {
+        lat: params.lat,
+        lng: params.lng,
+        radiusKm: params.radiusKm,
+        activeOn: params.activeOn,
+      },
     }),
 
   history: (token: string, productId: string, range = '90d') =>

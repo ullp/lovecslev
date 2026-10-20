@@ -7,7 +7,7 @@
  * Spuštění: npm run seed --workspace=@slevari/api   (vyžaduje DATABASE_URL + migrace)
  */
 import 'reflect-metadata';
-import { PRODUCT_ALIASES, PRODUCTS } from '@slevari/shared';
+import { PRODUCT_ALIASES, PRODUCTS, STORE_SEED } from '@slevari/shared';
 import { leaflets } from '@slevari/seed-data';
 import { CHAIN_SEED } from '../import/chain-seed';
 import { LeafletImportService } from '../import/leaflet-import.service';
@@ -41,6 +41,33 @@ async function seedAliases(prisma: PrismaService): Promise<number> {
   return upserted;
 }
 
+/** Prodejny pro F5 (mapa) — zdroj: `STORE_SEED` (spec §19 doplněk). */
+async function seedStores(prisma: PrismaService): Promise<number> {
+  let upserted = 0;
+
+  for (const store of STORE_SEED) {
+    const chain = await prisma.chain.findUnique({ where: { code: store.chainCode }, select: { id: true } });
+    if (chain === null) continue;
+
+    await prisma.store.upsert({
+      where: { chainId_address: { chainId: chain.id, address: store.address } },
+      create: {
+        chainId: chain.id,
+        name: store.name,
+        address: store.address,
+        city: store.city,
+        zip: store.zip,
+        latitude: store.latitude,
+        longitude: store.longitude,
+      },
+      update: { name: store.name, city: store.city, zip: store.zip, latitude: store.latitude, longitude: store.longitude },
+    });
+    upserted += 1;
+  }
+
+  return upserted;
+}
+
 async function main(): Promise<void> {
   const prisma = new PrismaService();
   await prisma.$connect();
@@ -62,8 +89,9 @@ async function main(): Promise<void> {
     const service = new LeafletImportService(new PrismaLeafletRepository(prisma));
     const report = await service.importLeaflets(leaflets, { source: 'SEED' });
     const aliasesSeeded = await seedAliases(prisma);
+    const storesSeeded = await seedStores(prisma);
 
-    console.log(JSON.stringify({ ...report, aliasesSeeded }, null, 2));
+    console.log(JSON.stringify({ ...report, aliasesSeeded, storesSeeded }, null, 2));
 
     if (report.errors.length > 0) {
       process.exitCode = 1;

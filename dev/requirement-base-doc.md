@@ -800,6 +800,8 @@ Billa není kandidátem varianty A (chybí Toaletní papír).
 | 429 | `RATE_LIMITED` | Překročen rate-limit |
 | 503 | `DEPENDENCY_UNAVAILABLE` | Výpadek ES/LLM s fallbackem níže |
 
+**Normalizace:** všechny chyby Nestu (validace DTO, 404 z routingu) MUSÍ projít `HttpExceptionFilter`, aby odpověď měla tvar §13.5 a `code` (`VALIDATION_ERROR`, `NOT_FOUND`, …).
+
 **Fallbacky:** při výpadku Elasticsearch MUSÍ vyhledávání přejít na PostgreSQL trigram (pomalejší, ale funkční) a vrátit hlavičku `X-Search-Fallback: postgres`. Při výpadku LLM MUSÍ být AI funkce nedostupná s `503 DEPENDENCY_UNAVAILABLE`, ale F1–F5 MUSÍ fungovat dál.
 
 ### 13.5 Formát chyby
@@ -1059,6 +1061,10 @@ LIDL, KAUFLAND, ALBERT, BILLA (4 letáky).
 
 Kontrolní přepočet unit price: Kaufland máslo `4490 / 250 × 1000 = 17960` → 179,60 Kč/kg.
 
+### 19.7 Prodejny (F5)
+`STORE_SEED` v `@slevari/shared` obsahuje **9 prodejen** v Praze: LIDL ×2, BILLA ×2, PENNY ×1, ALBERT ×2, KAUFLAND ×2 (souřadnice jsou přibližné, produkční data = Q1).
+Očekávané výsledky `GET /v1/stores/nearby?lat=50.081&lng=14.427&radiusKm=5&activeOn=2026-10-20`: **9 prodejen**, seřazené dle vzdálenosti, max **3 971 m**, PENNY má `hasActiveLeaflet = false` (bez letáku), dotaz z Brna vrací 0.
+
 ---
 
 ## 20. Roadmapa implementace (milníky)
@@ -1103,6 +1109,10 @@ Kontrolní přepočet unit price: Kaufland máslo `4490 / 250 × 1000 = 17960` �
 | **M5** P3 historie cen: denní body + měsíční agregace, přerušení při změně balení, statistiky, PREMIUM gate | ✅ 8 testů, live: 4 řetězce × 7 dní, min 1990 / max 2790 | `apps/api/src/catalog/price-history.ts`, `GET /v1/products/:id/history` |
 | **M5** P4 domácnosti: pozvánky s hashovaným tokenem (7 dní), přijetí, odebírání členů, sdílené seznamy s IDOR ochranou | ✅ 12 testů, live: pozvánka → přijetí → sdílený seznam 200 → odebrání → 404 | `apps/api/src/households/` |
 | **M5** Web UI pro premium: `/history/[productId]`, `/alerts`, `/households` | ✅ `next build` 10 rout | `apps/web/app/` |
+| **F5** `GET /v1/stores/nearby` (bounding box + haversine v SQL, `hasActiveLeaflet`, max 100/25 km) + seed 9 prodejen | ✅ 3 testy, live: 9 prodejen / 5 řetězců / max 3 971 m / Brno 0 | `apps/api/src/stores/`, `packages/shared/src/fixtures/stores.ts` |
+| **F5** Web `/stores` (OpenStreetMap embed, geolokace s fallbackem, radius 1–25 km, seznam s vzdálenostmi) | ✅ `next build` 11 rout | `apps/web/app/stores/page.tsx` |
+| **F5** Mobil napojený na API (F1 letáky, F2 hledání, F5 prodejny) | ✅ typecheck; API URL přes `EXPO_PUBLIC_API_URL` | `apps/mobile/App.tsx`, `apps/mobile/src/api.ts` |
+| Normalizace HTTP chyb na kontrakt §13.5 (`VALIDATION_ERROR`, `NOT_FOUND`, …) | ✅ `HttpExceptionFilter` | `apps/api/src/common/http-exception.filter.ts` |
 | `apps/web` (Next.js) | ⛔ M4 | — |
 
 **Ověřeno na Postgresu 16 (`db:verify`):** `mliko → Mléko polotučné`, `toaletak → Toaletní papír 8 rolí`, `kureci → Kuřecí prsa`; `similarity('mliko','mleko') = 0,33` (proto §12.1 prahy 0,60/0,40 + edit-distance pravidlo).

@@ -2,6 +2,7 @@ import { ValidationPipe, type INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DomainExceptionFilter } from './common/domain-exception.filter';
+import { HttpExceptionFilter } from './common/http-exception.filter';
 
 /**
  * Společná konfigurace aplikace — používají ji main.ts i e2e testy,
@@ -15,7 +16,8 @@ export function configureApp(app: INestApplication): INestApplication {
       transform: true,
     }),
   );
-  app.useGlobalFilters(new DomainExceptionFilter());
+  // Pořadí: doménové chyby mají přednost, zbytek normalizuje HttpExceptionFilter.
+  app.useGlobalFilters(new HttpExceptionFilter(), new DomainExceptionFilter());
   return app;
 }
 
