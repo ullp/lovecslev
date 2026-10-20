@@ -1,6 +1,6 @@
 import { DomainError } from '../errors';
 import { optimizePurchase, type OptimizationResult, type OfferInput, type OptimizerItem } from '../optimizer';
-import { EXPECTED, OFFERS, SHOPPING_LIST } from './fixtures/mvpFixture';
+import { EXPECTED, OFFERS, SHOPPING_LIST } from '../fixtures/mvpFixture';
 
 function lineFor(result: OptimizationResult, productId: string) {
   const line = result.variantA?.items.find((item) => item.productId === productId);

@@ -340,7 +340,7 @@
 | Testy | Jest (unit), Supertest (e2e) | pokrytí doménové logiky ≥ 80 % |
 
 ### 8.2 Struktura repozitáře (monorepo, npm workspaces)
-> **Stav:** existuje pouze `packages/shared` (doménové jádro, §20.1). `apps/*`, `docker-compose.yml` a CI se doplní v milníku M0.
+> **Stav (M0):** hotové `packages/shared`, `apps/api`, `apps/mobile`, `docker-compose.yml` a CI. `apps/web` vznikne v M4.
 ```
 slevarikoleme/
 ├─ apps/
@@ -729,6 +729,7 @@ Billa není kandidátem varianty A (chybí Toaletní papír).
 | PATCH | `/v1/lists/:id/items/:itemId` | USER | Změna množství / potvrzení shody |
 | DELETE | `/v1/lists/:id/items/:itemId` | USER | Odebrání položky |
 | POST | `/v1/lists/:id/optimize` | USER | F4: FREE = Varianta A; PREMIUM = A + B + úspora (volitelně `date`, `maxStores`, `tripPenaltyMinor`) |
+| POST | `/v1/optimizer/preview` | USER | **M0 dev endpoint** bez DB/auth: validuje DTO a volá `optimizePurchase`; tarif z hlavičky `X-Plan` (`FREE` default). V M3 ho nahradí `/v1/lists/:id/optimize` |
 | POST | `/v1/advisor/plan` | PREMIUM | P1 AI poradce |
 | GET/POST/DELETE | `/v1/alerts`, `/v1/alerts/:id` | PREMIUM | P2 hlídač cen |
 | POST | `/v1/households`, `/v1/households/:id/invitations` | PREMIUM | P4 rodinné sdílení |
@@ -1057,10 +1058,12 @@ Kontrolní přepočet unit price: Kaufland máslo `4490 / 250 × 1000 = 17960` �
 | Co | Stav | Kde |
 |---|---|---|
 | Doménové jádro (část M3, bez DB) — peníze, jednotky, jednotková cena, optimalizátor | ✅ hotovo | `packages/shared/src/{errors,money,units,pricing,optimizer}.ts` |
-| Fixture §19 jako spustitelný kód | ✅ hotovo | `packages/shared/src/__tests__/fixtures/mvpFixture.ts` |
-| Testy (unit + golden + determinismus + výkon) | ✅ 56 testů zelených, coverage 95 % statements / 91 % branches | `packages/shared/src/__tests__/*.test.ts` |
-| M0 scaffold (`apps/api`, `apps/mobile`, `apps/web`, `docker-compose`, CI) | ⛔ nezačato | — |
-| Migrace DB, import CLI, API (M1–M2) | ⛔ nezačato | — |
-| Git repozitář | ⛔ neinicializováno (`git init` chybí) | — |
+| Fixture §19 jako spustitelný a exportovaný kód | ✅ hotovo | `packages/shared/src/fixtures/mvpFixture.ts` (`import { OFFERS, SHOPPING_LIST } from '@slevari/shared'`) |
+| Testy jádra (unit + golden + determinismus + výkon) | ✅ 56 testů, coverage 95 % stmts / 91 % branches | `packages/shared/src/__tests__/*.test.ts` |
+| **M0** scaffold: git, `apps/api` (NestJS), `apps/mobile` (Expo), `docker-compose`, CI | ✅ hotovo | `apps/*`, `docker-compose.yml`, `.github/workflows/ci.yml` |
+| API testy (unit + e2e přes Supertest, včetně paywallu D18 a mapování doménových chyb) | ✅ 12 testů | `apps/api/src/**/*.spec.ts`, `apps/api/test/*.e2e-spec.ts` |
+| `apps/web` (Next.js) | ⛔ M4 | — |
+| Migrace DB, import CLI, auth (M1–M3) | ⛔ nezačato | — |
 
-Ověření: `npm install && npm test --workspace=@slevari/shared` (vyžaduje Node ≥ 20).
+Ověření (bez DB): `npm install && npm run build --workspace=@slevari/shared && npm test` (Node ≥ 20).
+Live kontrola: `npm run dev --workspace=@slevari/api` → `GET /health`, `POST /v1/optimizer/preview`.

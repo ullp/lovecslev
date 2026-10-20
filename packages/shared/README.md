@@ -47,5 +47,6 @@ npm test --workspace=@slevari/shared
 npx jest --config packages/shared/jest.config.js --rootDir packages/shared --coverage
 ```
 
-Golden fixture (spec §19) je v `src/__tests__/fixtures/mvpFixture.ts`:
+Golden fixture (spec §19) je v `src/fixtures/mvpFixture.ts` a je exportovaná z balíčku
+(`PRODUCTS`, `PRICE_TABLE`, `OFFERS`, `SHOPPING_LIST`, `EXPECTED`), takže ji používají testy i API:
 Varianta A = **64 690** haléřů (LIDL), Varianta B = **59 690** (LIDL + KAUFLAND), úspora **5 000**.

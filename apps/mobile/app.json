@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Slevaři kolem mě",
+    "slug": "slevari-koleme",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "cz.slevarikoleme.app"
+    },
+    "android": {
+      "package": "cz.slevarikoleme.app"
+    },
+    "locales": {},
+    "extra": {}
+  }
+}

@@ -1,10 +1,10 @@
 /**
- * Referenční datová sada — ZÁVAZNÁ pro testy (spec §19).
+ * Referenční datová sada — ZÁVAZNÁ pro testy a demo seed (spec §19).
  * Čísla zde MUSÍ odpovídat tabulkám v dev/requirement-base-doc.md §19.4–§19.6.
  * Ceny jsou v haléřích (spec §0.5).
  */
-import type { OfferInput, OptimizerItem } from '../../optimizer';
-import type { BaseUnit, PricingMode } from '../../units';
+import type { OfferInput, OptimizerItem } from '../optimizer';
+import type { BaseUnit, PricingMode } from '../units';
 
 export type ChainCode = 'LIDL' | 'ALBERT' | 'KAUFLAND' | 'BILLA';
 
@@ -98,9 +98,27 @@ export const SHOPPING_LIST: readonly OptimizerItem[] = [
 /** Spec §19.6 — očekávané hodnoty, na kterých stojí golden testy. */
 export const EXPECTED = {
   lineCosts: {
-    LIDL: { prd_mleko: 11940, prd_maslo: 10980, prd_kureci_prsa: 25800, prd_banany: 5980, prd_toaletni_papir: 9990 },
-    ALBERT: { prd_mleko: 14940, prd_maslo: 10580, prd_kureci_prsa: 27800, prd_banany: 6980, prd_toaletni_papir: 9490 },
-    KAUFLAND: { prd_mleko: 16740, prd_maslo: 8980, prd_kureci_prsa: 27000, prd_banany: 7980, prd_toaletni_papir: 6990 },
+    LIDL: {
+      prd_mleko: 11940,
+      prd_maslo: 10980,
+      prd_kureci_prsa: 25800,
+      prd_banany: 5980,
+      prd_toaletni_papir: 9990,
+    },
+    ALBERT: {
+      prd_mleko: 14940,
+      prd_maslo: 10580,
+      prd_kureci_prsa: 27800,
+      prd_banany: 6980,
+      prd_toaletni_papir: 9490,
+    },
+    KAUFLAND: {
+      prd_mleko: 16740,
+      prd_maslo: 8980,
+      prd_kureci_prsa: 27000,
+      prd_banany: 7980,
+      prd_toaletni_papir: 6990,
+    },
     BILLA: { prd_mleko: 16140, prd_maslo: 11380, prd_kureci_prsa: 29800, prd_banany: 7380 },
   },
   singleStoreTotals: { LIDL: 64690, KAUFLAND: 67690, ALBERT: 69790, BILLA: 64700 },

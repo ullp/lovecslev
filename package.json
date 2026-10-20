@@ -5,7 +5,8 @@
   "description": "Slevaři kolem mě — agregátor letáků a optimalizace nákupu (spec: dev/requirement-base-doc.md)",
   "license": "UNLICENSED",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
