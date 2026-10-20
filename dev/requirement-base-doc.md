@@ -883,6 +883,13 @@ fetch → raw snapshot (SHA-256) → parse → normalize → JSON kontrakt (§5 
 
 **Testování parserů:** každý adaptér MUSÍ mít archivovaný reálný snapshot (HTML/PDF) a contract test, který z něj vrátí přesně očekávaný JSON. Testy NESMÍ nikdy sahat na síť (CI offline).
 
+**Implementace (M7):**
+- `LeafletSourceAdapter` (`fetch(period)` → `RawSnapshot`, `parse(snapshot)` → `LeafletImportDto`); produkční `LidlHtmlAdapter` (cheerio, `data-*` atributy) + `FileFixtureAdapter` pro offline demo/CI (`SCRAPE_SOURCE=fixture`).
+- `FileSnapshotStore` ukládá `storage/raw/{chain}/{validFrom}/{sha256}.html` (SHA-256 obsahu, re-parsování bez refetchování).
+- Orchestrátor `LeafletScrapeService`: právní gate → circuit breaker → snapshot → parse → import s quarantine; stavy `IMPORTED` / `UNCHANGED` / `QUARANTINED` / `SKIPPED_LEGAL` / `SKIPPED_PAUSED` / `SKIPPED_NO_ADAPTER` / `FAILED`.
+- Circuit breaker je **persistentní** v `chains.scrape_failures` + `chains.scrape_paused_until`: 2 selhání za sebou → pauza 6 h; úspěch počítadlo resetuje.
+- CLI: `SCRAPE_SOURCE=fixture npm run scrape --workspace=@slevari/api -- --valid-from=2026-10-21 --valid-to=2026-10-27` (exit 1 při `failed > 0`).
+
 **Rizika a mitigace:**
 | Riziko | Mitigace |
 |---|---|
@@ -975,6 +982,7 @@ Tato sekce dokumentuje **všechna** místa, kde původní zadání nestačilo k 
 | D21 | Nebylo potvrzeno, zda ES patří do MVP (Q6) | **Elasticsearch primárně** (dle zadání) za `SearchPort` interfacem, **`PostgresTrgmAdapter` jako fallback** (i pro CI bez ES) | Zachovává zadání, ale odolnost vůči výpadku a testovatelnost bez ES; výměna enginu nevyžaduje změnu doménové vrstvy |
 | D22 | Nebyla určena retence historie cen (Q7) | **24 měsíců** denních bodů v `price_history_points`; starší data agregovat do `price_history_monthly` (min/avg/max unit price) a denní body mazat | Drží 2 roky srovnatelného grafu (meziroční sezóna), omezuje růst DB a odpovídá GDPR minimalizaci |
 | D23 | Spec neměla uložení refresh tokenů, ale vyžaduje refresh (30 dní) a logout | Nová tabulka `refresh_tokens` s **SHA-256 hashem** (nikdy plaintext), rotace při každém refreshi, revokace při logoutu; access token 15 min bez stavu | Umožňuje odhlášení a revokaci bez držení session na serveru; hash chrání DB při úniku |
+| D28 | Nebylo určeno, jak řešit opakovaná selhání scrapingu a jak testovat bez sítě | Circuit breaker v `chains` (2 selhání → 6 h pauza), stavy `UNCHANGED`/`SKIPPED_*`, `FileFixtureAdapter` pro offline testy, snapshot cesta dle `validFrom` | Zabraňuje zahlcení zdroje a dovoluje plně reprodukovatelné testy/CI bez síťových volání |
 | D27 | AI poradce potřebuje deterministické chování a limit, který nejde obejít | `date` jen pro ceny; **rate-limit vždy podle skutečného dne** v tabulce `advisor_usage`; `minimalMinor` = min(A, B) nebo `null` | Bez toho by změna `date` obcházela limit a prázdná varianta by hlásila nákup za 0 Kč |
 | D25 | Nebylo určeno, co dělat, když není nakonfigurovaný žádný doručovací kanál | Stav `NOT_CONFIGURED` = skip (ne failure), job vrací exit 0; `failed` jen při skutečném selhání doručení | Lokální/CI běh bez Resend klíče a push tokenů nesmí shazovat job |
 | D26 | P4 nespecifikovala počet domácností a kdo smí zvát | **1 domácnost na uživatele**, pozvánky jen `OWNER`, max 6 členů, seznam sdílený přes `householdId` s plným přístupem členů | Zjednodušuje model i UI; rozšíření na víc domácností je změna pouze v doméně |
@@ -1118,6 +1126,7 @@ Očekávané výsledky `GET /v1/stores/nearby?lat=50.081&lng=14.427&radiusKm=5&a
 | Normalizace HTTP chyb na kontrakt §13.5 (`VALIDATION_ERROR`, `NOT_FOUND`, …) | ✅ `HttpExceptionFilter` | `apps/api/src/common/http-exception.filter.ts` |
 | **M6** P1 AI poradce: striktní JSON parser, prompt s katalogem, šablona jako fallback, rate-limit 10/den, budget check, migrace `0005_advisor_usage` | ✅ 8 testů API + 4 shared; live: FREE 403, TEMPLATE fallback, A 60 710 / B 55 710 / úspora 5 000, 11. dotaz 429 | `apps/api/src/advisor/`, `packages/shared/src/advisor/` |
 | **M6** Web `/advisor` (text + rozpočet, zdroj odpovědi, navržený seznam, optimalizace, budget banner) | ✅ `next build` 12 rout | `apps/web/app/advisor/page.tsx` |
+| **M7** Scraping: adaptéry (Lidl HTML + fixture), snapshoty se SHA-256, právní gate, persistentní circuit breaker, quarantine, monitoring report, migrace `0006` | ✅ 9 testů; live: IMPORTED 5 akcí/35 bodů historie, 2. běh UNCHANGED, legal gate, 2× FAILED → pauza → SKIPPED_PAUSED | `apps/api/src/scraping/`, `src/cli/scrape.ts` |
 | `apps/web` (Next.js) | ⛔ M4 | — |
 
 **Ověřeno na Postgresu 16 (`db:verify`):** `mliko → Mléko polotučné`, `toaletak → Toaletní papír 8 rolí`, `kureci → Kuřecí prsa`; `similarity('mliko','mleko') = 0,33` (proto §12.1 prahy 0,60/0,40 + edit-distance pravidlo).

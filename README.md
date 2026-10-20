@@ -26,9 +26,11 @@ Bez Dockeru lze DB ověřit embedded Postgresem (stáhne si binárku, nic neinst
 ```bash
 npm run db:verify --workspace=@slevari/api   # migrace + 2× seed + kontrola unaccent/trgm
 npm run alerts:evaluate --workspace=@slevari/api -- --date=2026-10-20   # P2 job (volitelně datum)
+SCRAPE_SOURCE=fixture npm run scrape --workspace=@slevari/api -- \
+  --valid-from=2026-10-21 --valid-to=2026-10-27                          # M7 scraping (offline fixture)
 ```
 
-Testy (229 testů, bez DB):
+Testy (238 testů, bez DB):
 
 ```bash
 npm test
@@ -86,6 +88,7 @@ packages/
 dev/
   requirement-base-doc.md   AI-ready specifikace (§0–§20), decision log D1–D22
   requirement-base-doc.v1-original.md  původní zadání (archiv)
+apps/api/src/scraping/      M7 adaptéry, snapshoty, právní gate, circuit breaker
 docker-compose.yml           postgres, redis, elasticsearch
 .github/workflows/ci.yml     install → build shared → typecheck → test → build api
 ```

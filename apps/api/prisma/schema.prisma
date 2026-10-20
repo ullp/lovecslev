@@ -98,6 +98,10 @@ model Chain {
   isMvp         Boolean   @default(false) @map("is_mvp")
   isActive      Boolean   @default(true) @map("is_active")
   legalApproved Boolean   @default(false) @map("legal_approved")
+  /// Circuit breaker scrapingu (spec §14.5): počet po sobě jdoucích selhání.
+  scrapeFailures    Int       @default(0) @map("scrape_failures")
+  /// Do kdy je scraping řetězce pozastaven (2 selhání za sebou).
+  scrapePausedUntil DateTime? @map("scrape_paused_until")
 
   stores           Store[]
   leaflets         Leaflet[]
