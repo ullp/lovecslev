@@ -208,6 +208,11 @@ export class InMemoryCatalogRepository implements CatalogRepository {
     return product ?? null;
   }
 
+  async listProducts(limit: number): Promise<readonly ProductRecord[]> {
+    this.calls.push('listProducts');
+    return PRODUCTS.slice(0, limit);
+  }
+
   async findChainByCode(code: string): Promise<{ id: string; code: string } | null> {
     this.calls.push('findChainByCode');
     const chain = CHAINS.find((entry) => entry.code === code);

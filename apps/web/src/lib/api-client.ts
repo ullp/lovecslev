@@ -1,5 +1,6 @@
 import { apiRequest, apiRequestWithMeta } from './api';
 import type {
+  AdvisorPlan,
   ChainView,
   Household,
   PriceAlert,
@@ -89,6 +90,9 @@ export const api = {
       token,
       body,
     }),
+
+  advisorPlan: (token: string, body: { freeText: string; budgetMinor?: number }) =>
+    apiRequest<AdvisorPlan>('/v1/advisor/plan', { method: 'POST', token, body }),
 
   storesNearby: (params: { lat: number; lng: number; radiusKm?: number; activeOn?: string }) =>
     apiRequest<readonly StoreNearby[]>('/v1/stores/nearby', {

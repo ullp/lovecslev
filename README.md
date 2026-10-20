@@ -28,7 +28,7 @@ npm run db:verify --workspace=@slevari/api   # migrace + 2× seed + kontrola una
 npm run alerts:evaluate --workspace=@slevari/api -- --date=2026-10-20   # P2 job (volitelně datum)
 ```
 
-Testy (217 testů, bez DB):
+Testy (229 testů, bez DB):
 
 ```bash
 npm test
@@ -48,6 +48,7 @@ npm run typecheck --workspaces --if-present
 | `/alerts` | P2 hlídač cen (vytvoření, seznam, smazání) |
 | `/households` | P4 domácnost, pozvánky, přijetí tokenem, správa členů |
 | `/stores` | F5 mapa (OpenStreetMap) + prodejny v okolí s vzdálenostmi |
+| `/advisor` | P1 AI poradce (text + rozpočet, zdroj odpovědi, návrh + optimalizace) |
 
 Spuštění: `npm run dev --workspace=@slevari/web` (očekává API na `http://localhost:3000`, jde změnit přes `NEXT_PUBLIC_API_URL`).
 
@@ -67,6 +68,7 @@ Spuštění: `npm run dev --workspace=@slevari/web` (očekává API na `http://l
 | `GET /v1/products/:id/history?range=90d` | P3 historie cen (PREMIUM) |
 | `GET /v1/stores/nearby?lat=&lng=&radiusKm=` | F5 prodejny v okolí (haversine, `hasActiveLeaflet`) |
 | `GET/POST/DELETE /v1/alerts`, `/v1/alerts/:id` | P2 hlídač cen (PREMIUM, max 20) |
+| `POST /v1/advisor/plan` | P1 AI poradce (PREMIUM, 10 dotazů/den, fallback šablona) |
 | `POST /v1/devices/push-token` | registrace Expo push tokenu |
 | `POST/GET /v1/households`, `POST /v1/households/:id/invitations`, `POST /v1/households/invitations/accept`, `DELETE /v1/households/:id/members/:userId` | P4 domácnosti a sdílené seznamy (PREMIUM) |
 | `POST /v1/optimizer/preview` | dev preview bez DB (`X-Plan` hlavička) |

@@ -13,7 +13,9 @@ export type DomainErrorCode =
   | 'UNAUTHORIZED'
   | 'CONFLICT'
   | 'PLAN_LIMIT_REACHED'
-  | 'PREMIUM_REQUIRED';
+  | 'PREMIUM_REQUIRED'
+  | 'RATE_LIMITED'
+  | 'DEPENDENCY_UNAVAILABLE';
 
 export class DomainError extends Error {
   readonly code: DomainErrorCode;

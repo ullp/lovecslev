@@ -254,6 +254,23 @@ export class PrismaCatalogRepository implements CatalogRepository {
     };
   }
 
+  async listProducts(limit: number): Promise<readonly ProductRecord[]> {
+    const products = await this.prisma.product.findMany({
+      where: { isActive: true },
+      orderBy: { canonicalName: 'asc' },
+      take: limit,
+      select: { id: true, canonicalName: true, brand: true, category: true, baseUnit: true },
+    });
+
+    return products.map((product) => ({
+      productId: product.id,
+      name: product.canonicalName,
+      brand: product.brand,
+      category: product.category,
+      baseUnit: product.baseUnit,
+    }));
+  }
+
   async findChainByCode(code: string): Promise<{ id: string; code: string } | null> {
     const chain = await this.prisma.chain.findFirst({
       where: { code, isActive: true },

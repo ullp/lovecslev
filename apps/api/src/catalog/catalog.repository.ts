@@ -23,6 +23,8 @@ export interface CatalogRepository {
   findOffers(productIds: readonly string[], activeOn: string): Promise<ReadonlyMap<string, readonly OfferView[]>>;
   /** Produkt pro potvrzení shody v seznamu (spec §5 F3). */
   findProduct(productId: string): Promise<ProductRecord | null>;
+  /** Katalog produktů pro AI poradce / doporučení (spec §6 P1). */
+  listProducts(limit: number): Promise<readonly ProductRecord[]>;
   /** P3: denní body + měsíční agregace v rozsahu (spec §9.8, §9.12). */
   findPriceHistory(productId: string, from: string, to: string): Promise<readonly PriceHistoryRow[]>;
   /** Řetězec podle kódu (P2: cílení alertu na řetězec). */

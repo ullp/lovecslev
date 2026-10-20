@@ -15,6 +15,8 @@ const STATUS_BY_CODE: Readonly<Partial<Record<DomainErrorCode, number>>> = {
   PLAN_LIMIT_REACHED: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
+  RATE_LIMITED: 429,
+  DEPENDENCY_UNAVAILABLE: 503,
 };
 
 /**

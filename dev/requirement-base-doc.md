@@ -273,8 +273,10 @@
 **Pravidla**
 - LLM MUSÍ vracet **striktní JSON** dle schématu; volný text je povolen jen v `explanation`.
 - LLM NESMÍ vymýšlet produkty ani ceny. Množství a ceny MUSÍ pocházet z DB. Neznámý produkt → položka se stavem `UNRESOLVED`.
-- MUSÍ existovat fallback: při nedostupnosti LLM se použije šablona (4členná rodina ≈ 5–7denní koš dle kategorií).
-- MUSÍ být rate-limit 10 dotazů/den/uživatel a timeout 20 s.
+- MUSÍ existovat fallback: při nedostupnosti LLM nebo nevalidním JSON se použije deterministická šablona (koš dle kategorií); odpověď MUSÍ obsahovat `meta.source = TEMPLATE` a `meta.fallbackReason`.
+- MUSÍ být rate-limit **10 dotazů/den/uživatel** a timeout **20 s**. Čítač se MUSÍ vést podle skutečného dne (`advisor_usage`), NIKDY podle parametru `date` — jinak by šel limit obejít.
+- Nepovinný parametr `date` (`YYYY-MM-DD`) určuje, k jakému dni se počítají platné akce (D24); default „dnes“ v Europe/Prague.
+- `minimalMinor` = **nejnižší dostupná varianta** (A i B), `null` pokud není dostupná žádná akce (nikdy 0).
 
 ### P2 — Hlídač cen
 **Vstup:** produkt + prahová cena (`targetUnitPriceMinor`) + volitelně řetězec.
@@ -747,7 +749,7 @@ Billa není kandidátem varianty A (chybí Toaletní papír).
 | DELETE | `/v1/lists/:id/items/:itemId` | USER | Odebrání položky |
 | POST | `/v1/lists/:id/optimize` | USER | F4: FREE = Varianta A; PREMIUM = A + B + úspora (volitelně `date`, `maxStores`, `tripPenaltyMinor`) |
 | POST | `/v1/optimizer/preview` | USER | **M0 dev endpoint** bez DB/auth: validuje DTO a volá `optimizePurchase`; tarif z hlavičky `X-Plan` (`FREE` default). V M3 ho nahradí `/v1/lists/:id/optimize` |
-| POST | `/v1/advisor/plan` | PREMIUM | P1 AI poradce |
+| POST | `/v1/advisor/plan` | PREMIUM | P1 AI poradce (10/den, `date`, fallback šablona) |
 | GET/POST/DELETE | `/v1/alerts`, `/v1/alerts/:id` | PREMIUM | P2 hlídač cen (limit 20) |
 | POST | `/v1/households` · GET `/v1/households` | PREMIUM | P4 vytvoření a detail domácnosti s členy |
 | POST | `/v1/households/:id/invitations` | PREMIUM | P4 pozvánka e-mailem (jen OWNER, platnost 7 dní) |
@@ -973,6 +975,7 @@ Tato sekce dokumentuje **všechna** místa, kde původní zadání nestačilo k 
 | D21 | Nebylo potvrzeno, zda ES patří do MVP (Q6) | **Elasticsearch primárně** (dle zadání) za `SearchPort` interfacem, **`PostgresTrgmAdapter` jako fallback** (i pro CI bez ES) | Zachovává zadání, ale odolnost vůči výpadku a testovatelnost bez ES; výměna enginu nevyžaduje změnu doménové vrstvy |
 | D22 | Nebyla určena retence historie cen (Q7) | **24 měsíců** denních bodů v `price_history_points`; starší data agregovat do `price_history_monthly` (min/avg/max unit price) a denní body mazat | Drží 2 roky srovnatelného grafu (meziroční sezóna), omezuje růst DB a odpovídá GDPR minimalizaci |
 | D23 | Spec neměla uložení refresh tokenů, ale vyžaduje refresh (30 dní) a logout | Nová tabulka `refresh_tokens` s **SHA-256 hashem** (nikdy plaintext), rotace při každém refreshi, revokace při logoutu; access token 15 min bez stavu | Umožňuje odhlášení a revokaci bez držení session na serveru; hash chrání DB při úniku |
+| D27 | AI poradce potřebuje deterministické chování a limit, který nejde obejít | `date` jen pro ceny; **rate-limit vždy podle skutečného dne** v tabulce `advisor_usage`; `minimalMinor` = min(A, B) nebo `null` | Bez toho by změna `date` obcházela limit a prázdná varianta by hlásila nákup za 0 Kč |
 | D25 | Nebylo určeno, co dělat, když není nakonfigurovaný žádný doručovací kanál | Stav `NOT_CONFIGURED` = skip (ne failure), job vrací exit 0; `failed` jen při skutečném selhání doručení | Lokální/CI běh bez Resend klíče a push tokenů nesmí shazovat job |
 | D26 | P4 nespecifikovala počet domácností a kdo smí zvát | **1 domácnost na uživatele**, pozvánky jen `OWNER`, max 6 členů, seznam sdílený přes `householdId` s plným přístupem členů | Zjednodušuje model i UI; rozšíření na víc domácností je změna pouze v doméně |
 | D24 | `POST /v1/lists/:id/optimize` potřebuje deterministické datum (jinak se testy a demo rozcházejí s platností letáků) | Nepovinný param `date` (`YYYY-MM-DD`), default `todayInPrague()` | Akceptační kritéria i demo nad fixture (§19.3 platí 14.–20. 10.) musí být reprodukovatelná |
@@ -1113,6 +1116,8 @@ Očekávané výsledky `GET /v1/stores/nearby?lat=50.081&lng=14.427&radiusKm=5&a
 | **F5** Web `/stores` (OpenStreetMap embed, geolokace s fallbackem, radius 1–25 km, seznam s vzdálenostmi) | ✅ `next build` 11 rout | `apps/web/app/stores/page.tsx` |
 | **F5** Mobil napojený na API (F1 letáky, F2 hledání, F5 prodejny) | ✅ typecheck; API URL přes `EXPO_PUBLIC_API_URL` | `apps/mobile/App.tsx`, `apps/mobile/src/api.ts` |
 | Normalizace HTTP chyb na kontrakt §13.5 (`VALIDATION_ERROR`, `NOT_FOUND`, …) | ✅ `HttpExceptionFilter` | `apps/api/src/common/http-exception.filter.ts` |
+| **M6** P1 AI poradce: striktní JSON parser, prompt s katalogem, šablona jako fallback, rate-limit 10/den, budget check, migrace `0005_advisor_usage` | ✅ 8 testů API + 4 shared; live: FREE 403, TEMPLATE fallback, A 60 710 / B 55 710 / úspora 5 000, 11. dotaz 429 | `apps/api/src/advisor/`, `packages/shared/src/advisor/` |
+| **M6** Web `/advisor` (text + rozpočet, zdroj odpovědi, navržený seznam, optimalizace, budget banner) | ✅ `next build` 12 rout | `apps/web/app/advisor/page.tsx` |
 | `apps/web` (Next.js) | ⛔ M4 | — |
 
 **Ověřeno na Postgresu 16 (`db:verify`):** `mliko → Mléko polotučné`, `toaletak → Toaletní papír 8 rolí`, `kureci → Kuřecí prsa`; `similarity('mliko','mleko') = 0,33` (proto §12.1 prahy 0,60/0,40 + edit-distance pravidlo).

@@ -263,6 +263,7 @@ model User {
   subscriptions Subscription[]
   memberships   HouseholdMember[]
   refreshTokens RefreshToken[]
+  advisorUsage  AdvisorUsage[]
   ownedHouseholds Household[] @relation("HouseholdOwner")
 
   @@map("users")
@@ -408,4 +409,16 @@ model PriceAlert {
   @@unique([userId, productId, chainId])
   @@index([userId, isActive])
   @@map("price_alerts")
+}
+
+model AdvisorUsage {
+  id       String   @id @default(uuid()) @db.Uuid
+  userId   String   @map("user_id") @db.Uuid
+  day      DateTime @db.Date
+  requests Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, day])
+  @@map("advisor_usage")
 }

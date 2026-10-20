@@ -28,6 +28,9 @@ export function Nav(): JSX.Element {
         <Link href="/lists" className="nav-link">
           Seznamy
         </Link>
+        <Link href="/advisor" className="nav-link">
+          Poradce
+        </Link>
         <Link href="/stores" className="nav-link">
           Mapa
         </Link>

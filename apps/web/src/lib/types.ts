@@ -254,3 +254,24 @@ export interface StoreNearby {
   readonly distanceMeters: number;
   readonly hasActiveLeaflet: boolean;
 }
+
+/** P1 — AI poradce (spec §6 P1). */
+export interface AdvisorPlan {
+  readonly items: readonly { readonly productId: string | null; readonly name: string; readonly quantityBase: number; readonly baseUnit: BaseUnit }[];
+  readonly explanation: string;
+  readonly optimization: OptimizationResult;
+  readonly budget: {
+    readonly budgetMinor: number | null;
+    readonly feasible: boolean;
+    readonly minimalMinor: number | null;
+    readonly overByMinor: number;
+  };
+  readonly meta: {
+    readonly source: 'LLM' | 'TEMPLATE';
+    readonly llmModel: string;
+    readonly llmAvailable: boolean;
+    readonly fallbackReason: string | null;
+    readonly dailyLimit: number;
+    readonly usedToday: number;
+  };
+}

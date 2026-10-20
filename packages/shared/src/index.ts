@@ -10,5 +10,8 @@ export * from './matching/normalize';
 export * from './matching/similarity';
 export * from './matching/match';
 export * from './plan';
+export * from './advisor/types';
+export * from './advisor/prompt';
+export * from './advisor/template';
 export * from './fixtures/mvpFixture';
 export * from './fixtures/stores';
