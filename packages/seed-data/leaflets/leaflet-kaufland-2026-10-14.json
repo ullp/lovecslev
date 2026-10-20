@@ -1,0 +1,62 @@
+{
+  "chain": "KAUFLAND",
+  "title": "Leták KAUFLAND 2026-10-14 – 2026-10-20",
+  "validFrom": "2026-10-14",
+  "validTo": "2026-10-20",
+  "products": [
+    {
+      "name": "Mléko polotučné",
+      "price": 27.9,
+      "packageAmount": 1,
+      "packageUnit": "l",
+      "category": "Mléčné výrobky",
+      "brand": "Madeta",
+      "regularPrice": 29.9
+    },
+    {
+      "name": "Máslo",
+      "price": 44.9,
+      "packageAmount": 250,
+      "packageUnit": "g",
+      "category": "Mléčné výrobky",
+      "brand": "Madeta",
+      "regularPrice": 54.9
+    },
+    {
+      "name": "Kuřecí prsa",
+      "price": 135,
+      "packageAmount": 1,
+      "packageUnit": "kg",
+      "category": "Maso a ryby",
+      "regularPrice": 152,
+      "pricing": "WEIGHT"
+    },
+    {
+      "name": "Banány",
+      "price": 39.9,
+      "packageAmount": 1,
+      "packageUnit": "kg",
+      "category": "Ovoce a zelenina",
+      "regularPrice": 42.9,
+      "pricing": "WEIGHT"
+    },
+    {
+      "name": "Toaletní papír 8 rolí",
+      "price": 69.9,
+      "packageAmount": 8,
+      "packageUnit": "role",
+      "category": "Drogerie",
+      "brand": "Zewa",
+      "regularPrice": 89.9
+    },
+    {
+      "name": "Coca-Cola Original 1.5 l",
+      "price": 34.9,
+      "packageAmount": 1.5,
+      "packageUnit": "l",
+      "category": "Nápoje",
+      "brand": "Coca-Cola",
+      "regularPrice": 37.9
+    }
+  ]
+}

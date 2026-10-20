@@ -12,12 +12,20 @@ Agregátor letákových akcí českých řetězců a optimalizace nákupu podle 
 npm install                                  # Node ≥ 20, npm workspaces
 docker compose up -d                         # Postgres 16, Redis 7, Elasticsearch 8
 npm run build --workspace=@slevari/shared    # API i mobil importují dist/
+npm run db:migrate --workspace=@slevari/api  # aplikuje prisma/migrations
+npm run seed --workspace=@slevari/api        # 9 řetězců + 4 letáky + 22 akcí (idempotentní)
 npm run dev --workspace=@slevari/api         # http://localhost:3000/health
 
 curl -s localhost:3000/health
 ```
 
-Testy (68 testů, bez DB):
+Bez Dockeru lze DB ověřit embedded Postgresem (stáhne si binárku, nic neinstaluje globálně):
+
+```bash
+npm run db:verify --workspace=@slevari/api   # migrace + 2× seed + kontrola unaccent/trgm
+```
+
+Testy (103 testů, bez DB):
 
 ```bash
 npm test
@@ -28,10 +36,12 @@ npm run typecheck --workspaces --if-present
 
 ```
 apps/
-  api/       NestJS 10 — health + POST /v1/optimizer/preview (do M3 nahrazeno /v1/lists/:id/optimize)
+  api/       NestJS 10 — health, POST /v1/optimizer/preview, Prisma schéma + migrace, import CLI
+             prisma/schema.prisma (16 modelů dle §9), prisma/migrations/0001_init
   mobile/    Expo 51 — demo obrazovka nad @slevari/shared
 packages/
-  shared/    doménové jádro: money, units, pricing, optimizer + fixture §19 (viz README)
+  shared/    doménové jádro: money, units, pricing, optimizer, import (validace/mapper) + fixture §19
+  seed-data/ referenční letáky (§19) generované z fixture, `npm run build` je přegeneruje
 dev/
   requirement-base-doc.md   AI-ready specifikace (§0–§20), decision log D1–D22
   requirement-base-doc.v1-original.md  původní zadání (archiv)

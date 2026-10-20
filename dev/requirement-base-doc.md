@@ -345,6 +345,8 @@
 slevarikoleme/
 ├─ apps/
 │  ├─ api/                  # NestJS
+│  │  ├─ prisma/            # schema.prisma + migrations (spec §9)
+│  │  ├─ scripts/           # verify-db.mjs (embedded Postgres bez Dockeru)
 │  │  └─ src/
 │  │     ├─ modules/{auth,users,chains,stores,leaflets,products,search,lists,optimizer,alerts,subscriptions,advisor}
 │  │     └─ common/{guards,interceptors,filters,dto}
@@ -677,9 +679,11 @@ Billa není kandidátem varianty A (chybí Toaletní papír).
 1. **Normalizace dotazu:** trim, lower, odstranění diakritiky (`unaccent`), sjednocení mezer, odstranění interpunkce, sjednocení zápisu jednotek (`1,5l` → `1.5 l`).
 2. **Exact match** na `products.canonical_name` → `confidence = 1.00`, `method = EXACT`.
 3. **Alias match** na `product_aliases.alias` → `1.00`, `method = ALIAS` (např. `toaletak` → `Toaletní papír 8 rolí`, `coca cola` → `Coca-Cola Original 1.5 l`).
-4. **Trigram fuzzy** (pg_trgm `similarity` ≥ 0.45 → `method = TRIGRAM`) → `confidence = similarity`.
-   - `≥ 0.85` → `RESOLVED_AUTO`, `0.30–0.85` → `SUGGESTED`, `< 0.30` → `UNRESOLVED`.
-   - Tento krok řeší překlepy (`mliko` → `mleko`, similarity ≈ 0.8) **bez LLM**.
+4. **Trigram fuzzy** (pg_trgm) — `method = TRIGRAM`, `confidence = similarity(normalizedQuery, search_text)`.
+   - Prahy: `≥ 0.60` → `RESOLVED_AUTO`, `0.35–0.60` → `SUGGESTED`, `< 0.35` → `UNRESOLVED`.
+   - **Změřená realita (Postgres 16, pg_trgm):** `similarity('mliko','mleko') = 0.33`, `similarity('toaletak','toaletni papir') ≈ 0.35`. Proto samotný trigram na krátké překlepy NESTAČÍ.
+   - **Pravidlo pro krátké tokeny:** pro slova do 6 znaků se navíc počítá Damerau-Levenshteinova vzdálenost; `distance = 1` na tokenu délky ≥ 4 → `RESOLVED_AUTO` s `confidence = 0.90`, `method = TRIGRAM`.
+   - Tento krok MUSÍ řešit překlepy (`mliko` → `mleko`, `mleko` → `Mléko polotučné`) **bez LLM**.
 5. **LLM fallback** (jen PREMIUM, jen pokud kroky 2–4 selhaly a jen pro matching, ne pro ceny):
    - Vstup: dotaz + top 5 kandidátů z DB. Výstup: striktní JSON `{ "productId": string | null, "confidence": number, "reason": string }`.
    - Aplikuje se pouze při `confidence ≥ 0.85` a pouze na existující `productId`. Nikdy se nevytváří produkt.
@@ -1061,9 +1065,15 @@ Kontrolní přepočet unit price: Kaufland máslo `4490 / 250 × 1000 = 17960` �
 | Fixture §19 jako spustitelný a exportovaný kód | ✅ hotovo | `packages/shared/src/fixtures/mvpFixture.ts` (`import { OFFERS, SHOPPING_LIST } from '@slevari/shared'`) |
 | Testy jádra (unit + golden + determinismus + výkon) | ✅ 56 testů, coverage 95 % stmts / 91 % branches | `packages/shared/src/__tests__/*.test.ts` |
 | **M0** scaffold: git, `apps/api` (NestJS), `apps/mobile` (Expo), `docker-compose`, CI | ✅ hotovo | `apps/*`, `docker-compose.yml`, `.github/workflows/ci.yml` |
-| API testy (unit + e2e přes Supertest, včetně paywallu D18 a mapování doménových chyb) | ✅ 12 testů | `apps/api/src/**/*.spec.ts`, `apps/api/test/*.e2e-spec.ts` |
+| API testy (unit + e2e přes Supertest, včetně paywallu D18 a mapování doménových chyb) | ✅ 25 testů | `apps/api/src/**/*.spec.ts`, `apps/api/test/*.e2e-spec.ts` |
+| **M1** Postgres schéma (§9) + migrace `0001_init` (CHECKy, `search_text` GENERATED, GIN trgm, partial unique) | ✅ hotovo, aplikováno na Postgres 16 | `apps/api/prisma/` |
+| **M1** Validace importu §14.2 + mapper + checksum + idempotence + quarantine | ✅ hotovo | `packages/shared/src/import/*`, `apps/api/src/import/*` |
+| **M1** Seed data (`@slevari/seed-data`) + CLI `npm run seed` | ✅ hotovo: 9 řetězců, 4 letáky, 22 akcí, 6 produktů, 154 bodů historie | `packages/seed-data/`, `apps/api/src/cli/seed.ts` |
+| Ověření DB bez Dockeru (`embedded-postgres`, 2× seed = idempotence) | ✅ `npm run db:verify --workspace=@slevari/api` | `apps/api/scripts/verify-db.mjs` |
 | `apps/web` (Next.js) | ⛔ M4 | — |
-| Migrace DB, import CLI, auth (M1–M3) | ⛔ nezačato | — |
+| Auth, seznamy, endpointy F1–F5 (M3) | ⛔ nezačato | — |
+
+**Zjištění z M1 (zapsáno do §12.1):** reálné pg_trgm `similarity('mliko','mleko') = 0,33` — původní předpoklad „≈0,8“ byl chybný, proto jsou prahy nastavené na 0,60/0,35 a pro krátké tokeny platí pravidlo edit-distance ≤ 1.
 
 Ověření (bez DB): `npm install && npm run build --workspace=@slevari/shared && npm test` (Node ≥ 20).
 Live kontrola: `npm run dev --workspace=@slevari/api` → `GET /health`, `POST /v1/optimizer/preview`.

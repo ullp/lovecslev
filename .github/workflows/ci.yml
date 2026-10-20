@@ -24,6 +24,11 @@ jobs:
       - name: Build shared
         run: npm run build --workspace=@slevari/shared
 
+      - name: Generate Prisma client
+        run: npm run db:generate --workspace=@slevari/api
+        env:
+          DATABASE_URL: postgresql://slevari:slevari@localhost:5432/slevari
+
       - name: Typecheck
         run: npm run typecheck --workspaces --if-present
 
@@ -32,3 +37,18 @@ jobs:
 
       - name: Build API
         run: npm run build --workspace=@slevari/api
+
+  db-verify:
+    name: DB migrations & seed (embedded Postgres)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm run build --workspace=@slevari/shared
+      - run: npm run build --workspace=@slevari/seed-data
+      - name: Apply migrations, seed twice, verify counts
+        run: npm run db:verify --workspace=@slevari/api

@@ -3,4 +3,7 @@ export * from './money';
 export * from './units';
 export * from './pricing';
 export * from './optimizer';
+export * from './import/types';
+export * from './import/validator';
+export * from './import/mapper';
 export * from './fixtures/mvpFixture';

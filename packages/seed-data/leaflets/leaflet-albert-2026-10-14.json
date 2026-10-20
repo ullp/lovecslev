@@ -1,0 +1,62 @@
+{
+  "chain": "ALBERT",
+  "title": "Leták ALBERT 2026-10-14 – 2026-10-20",
+  "validFrom": "2026-10-14",
+  "validTo": "2026-10-20",
+  "products": [
+    {
+      "name": "Mléko polotučné",
+      "price": 24.9,
+      "packageAmount": 1,
+      "packageUnit": "l",
+      "category": "Mléčné výrobky",
+      "brand": "Madeta",
+      "regularPrice": 27.9
+    },
+    {
+      "name": "Máslo",
+      "price": 52.9,
+      "packageAmount": 250,
+      "packageUnit": "g",
+      "category": "Mléčné výrobky",
+      "brand": "Madeta",
+      "regularPrice": 58.9
+    },
+    {
+      "name": "Kuřecí prsa",
+      "price": 139,
+      "packageAmount": 1,
+      "packageUnit": "kg",
+      "category": "Maso a ryby",
+      "regularPrice": 155,
+      "pricing": "WEIGHT"
+    },
+    {
+      "name": "Banány",
+      "price": 34.9,
+      "packageAmount": 1,
+      "packageUnit": "kg",
+      "category": "Ovoce a zelenina",
+      "regularPrice": 39.9,
+      "pricing": "WEIGHT"
+    },
+    {
+      "name": "Toaletní papír 8 rolí",
+      "price": 94.9,
+      "packageAmount": 8,
+      "packageUnit": "role",
+      "category": "Drogerie",
+      "brand": "Zewa",
+      "regularPrice": 104.9
+    },
+    {
+      "name": "Coca-Cola Original 1.5 l",
+      "price": 32.9,
+      "packageAmount": 1.5,
+      "packageUnit": "l",
+      "category": "Nápoje",
+      "brand": "Coca-Cola",
+      "regularPrice": 36.9
+    }
+  ]
+}

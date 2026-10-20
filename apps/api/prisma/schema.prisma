@@ -1,0 +1,394 @@
+// Slevaři kolem mě — datový model dle dev/requirement-base-doc.md §9.
+// POZOR: `products.search_text` (GENERATED), GIN/trgm indexy a kontrolní CHECK
+// constrainty jsou doplněné v migraci (Prisma je neumí vyjádřit).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BaseUnit {
+  G
+  ML
+  PCS
+}
+
+enum PricingMode {
+  PACKAGE
+  WEIGHT
+}
+
+enum LeafletSource {
+  SEED
+  MANUAL
+  IMPORT
+  SCRAPE
+}
+
+enum PromotionScope {
+  CHAIN
+  STORE
+}
+
+enum AliasSource {
+  SEED
+  USER
+  AI
+}
+
+enum MatchStatus {
+  RESOLVED_AUTO
+  RESOLVED_CONFIRMED
+  SUGGESTED
+  UNRESOLVED
+}
+
+enum MatchMethod {
+  EXACT
+  ALIAS
+  TRIGRAM
+  AI
+  USER
+  NONE
+}
+
+enum HouseholdRole {
+  OWNER
+  MEMBER
+}
+
+enum PlanKind {
+  FREE
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum SubscriptionProvider {
+  MANUAL
+  STRIPE
+  REVENUECAT
+}
+
+enum PriceHistorySource {
+  PROMO
+  REGULAR
+}
+
+enum Platform {
+  IOS
+  ANDROID
+}
+
+model Chain {
+  id            String    @id @default(uuid()) @db.Uuid
+  code          String    @unique @db.VarChar(32)
+  name          String    @db.VarChar(64)
+  countryCode   String    @default("CZ") @map("country_code") @db.Char(2)
+  colorHex      String    @map("color_hex") @db.Char(7)
+  logoUrl       String?   @map("logo_url")
+  isMvp         Boolean   @default(false) @map("is_mvp")
+  isActive      Boolean   @default(true) @map("is_active")
+  legalApproved Boolean   @default(false) @map("legal_approved")
+
+  stores           Store[]
+  leaflets         Leaflet[]
+  promotions       Promotion[]
+  priceHistory     PriceHistoryPoint[]
+  monthlyHistory   PriceHistoryMonthly[]
+  priceAlerts      PriceAlert[]
+
+  @@map("chains")
+}
+
+model Store {
+  id        String   @id @default(uuid()) @db.Uuid
+  chainId   String   @map("chain_id") @db.Uuid
+  name      String   @db.VarChar(128)
+  address   String   @db.VarChar(255)
+  city      String   @db.VarChar(128)
+  zip       String?  @db.VarChar(8)
+  latitude  Decimal  @db.Decimal(9, 6)
+  longitude Decimal  @db.Decimal(9, 6)
+  isActive  Boolean  @default(true) @map("is_active")
+
+  chain      Chain       @relation(fields: [chainId], references: [id], onDelete: Restrict)
+  promotions Promotion[]
+
+  @@unique([chainId, address])
+  @@index([latitude, longitude])
+  @@map("stores")
+}
+
+model Leaflet {
+  id         String        @id @default(uuid()) @db.Uuid
+  chainId    String        @map("chain_id") @db.Uuid
+  title      String        @db.VarChar(255)
+  validFrom  DateTime      @map("valid_from") @db.Date
+  validTo    DateTime      @map("valid_to") @db.Date
+  source     LeafletSource
+  sourceUrl  String?       @map("source_url")
+  importedAt DateTime      @default(now()) @map("imported_at")
+  checksum   String        @db.Char(64)
+
+  chain      Chain       @relation(fields: [chainId], references: [id], onDelete: Restrict)
+  promotions Promotion[]
+
+  @@unique([chainId, validFrom, validTo])
+  @@index([validFrom, validTo])
+  @@map("leaflets")
+}
+
+
+model Product {
+  id            String      @id @default(uuid()) @db.Uuid
+  canonicalName String      @map("canonical_name") @db.VarChar(255)
+  brand         String?     @db.VarChar(128)
+  category      String      @default("Ostatní") @db.VarChar(64)
+  baseUnit      BaseUnit    @map("base_unit")
+  packageAmount Decimal     @map("package_amount") @db.Decimal(10, 3)
+  pricingMode   PricingMode @map("pricing_mode")
+  isActive      Boolean     @default(true) @map("is_active")
+
+  aliases        ProductAlias[]
+  promotions     Promotion[]
+  priceHistory   PriceHistoryPoint[]
+  monthlyHistory PriceHistoryMonthly[]
+  listItems      ShoppingListItem[]
+  priceAlerts    PriceAlert[]
+
+  @@unique([canonicalName, brand])
+  @@map("products")
+}
+
+model ProductAlias {
+  id        String      @id @default(uuid()) @db.Uuid
+  productId String      @map("product_id") @db.Uuid
+  alias     String      @db.VarChar(255)
+  source    AliasSource
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, alias])
+  @@index([alias])
+  @@map("product_aliases")
+}
+
+model Promotion {
+  id                String         @id @default(uuid()) @db.Uuid
+  leafletId         String         @map("leaflet_id") @db.Uuid
+  productId         String         @map("product_id") @db.Uuid
+  chainId           String         @map("chain_id") @db.Uuid
+  storeId           String?        @map("store_id") @db.Uuid
+  scope             PromotionScope @default(CHAIN)
+  priceMinor        Int            @map("price_minor")
+  regularPriceMinor Int?           @map("regular_price_minor")
+  packageAmount     Decimal        @map("package_amount") @db.Decimal(10, 3)
+  packageUnit       BaseUnit       @map("package_unit")
+  pricingMode       PricingMode    @map("pricing_mode")
+  unitPriceMinor    Int            @map("unit_price_minor")
+  note              String?        @db.VarChar(255)
+
+  leaflet Leaflet @relation(fields: [leafletId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  chain   Chain   @relation(fields: [chainId], references: [id], onDelete: Restrict)
+  store   Store?  @relation(fields: [storeId], references: [id], onDelete: Restrict)
+
+  // NULL v store_id znamená celořetězcovou akci; unikátnost pro CHAIN akce
+  // hlídá částečný index vytvořený v migraci.
+  @@unique([leafletId, productId, storeId])
+  @@index([productId, chainId])
+  @@index([chainId])
+  @@map("promotions")
+}
+
+model PriceHistoryPoint {
+  id             String             @id @default(uuid()) @db.Uuid
+  productId      String             @map("product_id") @db.Uuid
+  chainId        String             @map("chain_id") @db.Uuid
+  date           DateTime           @db.Date
+  priceMinor     Int                @map("price_minor")
+  unitPriceMinor Int                @map("unit_price_minor")
+  packageAmount  Decimal            @map("package_amount") @db.Decimal(10, 3)
+  packageUnit    BaseUnit           @map("package_unit")
+  source         PriceHistorySource
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  chain   Chain   @relation(fields: [chainId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, chainId, date])
+  @@index([productId, date])
+  @@map("price_history_points")
+}
+
+model PriceHistoryMonthly {
+  id                String   @id @default(uuid()) @db.Uuid
+  productId         String   @map("product_id") @db.Uuid
+  chainId           String   @map("chain_id") @db.Uuid
+  month             DateTime @db.Date
+  minUnitPriceMinor Int      @map("min_unit_price_minor")
+  avgUnitPriceMinor Int      @map("avg_unit_price_minor")
+  maxUnitPriceMinor Int      @map("max_unit_price_minor")
+  sampleDays        Int      @map("sample_days")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  chain   Chain   @relation(fields: [chainId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, chainId, month])
+  @@index([productId, month])
+  @@map("price_history_monthly")
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique @db.VarChar(255)
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  displayName  String?   @map("display_name") @db.VarChar(128)
+  locale       String    @default("cs-CZ") @db.VarChar(8)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  shoppingLists ShoppingList[]
+  priceAlerts   PriceAlert[]
+  pushTokens    PushToken[]
+  subscriptions Subscription[]
+  memberships   HouseholdMember[]
+  ownedHouseholds Household[] @relation("HouseholdOwner")
+
+  @@map("users")
+}
+
+model Household {
+  id           String @id @default(uuid()) @db.Uuid
+  name         String @db.VarChar(64)
+  ownerUserId  String @map("owner_user_id") @db.Uuid
+
+  owner       User                @relation("HouseholdOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  members     HouseholdMember[]
+  invitations HouseholdInvitation[]
+  lists       ShoppingList[]
+
+  @@map("households")
+}
+
+model HouseholdMember {
+  id          String        @id @default(uuid()) @db.Uuid
+  householdId String        @map("household_id") @db.Uuid
+  userId      String        @map("user_id") @db.Uuid
+  role        HouseholdRole
+  joinedAt    DateTime      @default(now()) @map("joined_at")
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([householdId, userId])
+  @@map("household_members")
+}
+
+model HouseholdInvitation {
+  id          String    @id @default(uuid()) @db.Uuid
+  householdId String    @map("household_id") @db.Uuid
+  email       String    @db.VarChar(255)
+  tokenHash   String    @unique @map("token_hash") @db.VarChar(128)
+  expiresAt   DateTime  @map("expires_at")
+  usedAt      DateTime? @map("used_at")
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+
+  @@map("household_invitations")
+}
+
+model Subscription {
+  id                     String               @id @default(uuid()) @db.Uuid
+  userId                 String               @map("user_id") @db.Uuid
+  plan                   PlanKind             @default(FREE)
+  status                 SubscriptionStatus   @default(ACTIVE)
+  currentPeriodEnd       DateTime?            @map("current_period_end")
+  provider               SubscriptionProvider @default(MANUAL)
+  providerSubscriptionId String?              @map("provider_subscription_id") @db.VarChar(128)
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSubscriptionId])
+  @@map("subscriptions")
+}
+
+model PushToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique @db.VarChar(255)
+  platform  Platform
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_tokens")
+}
+
+model ShoppingList {
+  id          String    @id @default(uuid()) @db.Uuid
+  ownerUserId String    @map("owner_user_id") @db.Uuid
+  householdId String?   @map("household_id") @db.Uuid
+  name        String    @default("Můj nákup") @db.VarChar(64)
+  isShared    Boolean   @default(false) @map("is_shared")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  owner     User               @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  household Household?         @relation(fields: [householdId], references: [id], onDelete: SetNull)
+  items     ShoppingListItem[]
+
+  @@index([ownerUserId])
+  @@map("shopping_lists")
+}
+
+model ShoppingListItem {
+  id              String      @id @default(uuid()) @db.Uuid
+  listId          String      @map("list_id") @db.Uuid
+  rawText         String      @map("raw_text") @db.VarChar(255)
+  productId       String?     @map("product_id") @db.Uuid
+  quantityBase    Decimal     @map("quantity_base") @db.Decimal(10, 3)
+  baseUnit        BaseUnit    @map("base_unit")
+  matchStatus     MatchStatus @map("match_status")
+  matchMethod     MatchMethod @map("match_method")
+  matchConfidence Decimal?    @map("match_confidence") @db.Decimal(3, 2)
+  sortOrder       Int         @default(0) @map("sort_order")
+  createdAt       DateTime    @default(now()) @map("created_at")
+
+  list    ShoppingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  product Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([listId, sortOrder])
+  @@index([productId])
+  @@map("shopping_list_items")
+}
+
+model PriceAlert {
+  id                   String    @id @default(uuid()) @db.Uuid
+  userId               String    @map("user_id") @db.Uuid
+  productId            String    @map("product_id") @db.Uuid
+  chainId              String?   @map("chain_id") @db.Uuid
+  targetUnitPriceMinor Int       @map("target_unit_price_minor")
+  isActive             Boolean   @default(true) @map("is_active")
+  lastNotifiedAt       DateTime? @map("last_notified_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  chain   Chain?  @relation(fields: [chainId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, productId, chainId])
+  @@index([userId, isActive])
+  @@map("price_alerts")
+}

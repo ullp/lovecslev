@@ -1,0 +1,53 @@
+{
+  "chain": "LIDL",
+  "title": "Leták LIDL 2026-10-14 – 2026-10-20",
+  "validFrom": "2026-10-14",
+  "validTo": "2026-10-20",
+  "products": [
+    {
+      "name": "Mléko polotučné",
+      "price": 19.9,
+      "packageAmount": 1,
+      "packageUnit": "l",
+      "category": "Mléčné výrobky",
+      "brand": "Madeta",
+      "regularPrice": 24.9
+    },
+    {
+      "name": "Máslo",
+      "price": 54.9,
+      "packageAmount": 250,
+      "packageUnit": "g",
+      "category": "Mléčné výrobky",
+      "brand": "Madeta",
+      "regularPrice": 59.9
+    },
+    {
+      "name": "Kuřecí prsa",
+      "price": 129,
+      "packageAmount": 1,
+      "packageUnit": "kg",
+      "category": "Maso a ryby",
+      "regularPrice": 149,
+      "pricing": "WEIGHT"
+    },
+    {
+      "name": "Banány",
+      "price": 29.9,
+      "packageAmount": 1,
+      "packageUnit": "kg",
+      "category": "Ovoce a zelenina",
+      "regularPrice": 34.9,
+      "pricing": "WEIGHT"
+    },
+    {
+      "name": "Toaletní papír 8 rolí",
+      "price": 99.9,
+      "packageAmount": 8,
+      "packageUnit": "role",
+      "category": "Drogerie",
+      "brand": "Zewa",
+      "regularPrice": 109.9
+    }
+  ]
+}

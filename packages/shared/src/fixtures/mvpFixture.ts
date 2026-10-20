@@ -1,56 +1,64 @@
 /**
- * Referenční datová sada — ZÁVAZNÁ pro testy a demo seed (spec §19).
+ * Referenční datová sada — ZÁVAZNÁ pro testy, seed a demo (spec §19).
  * Čísla zde MUSÍ odpovídat tabulkám v dev/requirement-base-doc.md §19.4–§19.6.
  * Ceny jsou v haléřích (spec §0.5).
  */
 import type { OfferInput, OptimizerItem } from '../optimizer';
-import type { BaseUnit, PricingMode } from '../units';
+import { normalizePackageSize, type NormalizedPackage, type PackageUnit, type PricingMode } from '../units';
 
 export type ChainCode = 'LIDL' | 'ALBERT' | 'KAUFLAND' | 'BILLA';
 
 export interface ProductMeta {
   readonly canonicalName: string;
-  readonly baseUnit: BaseUnit;
-  readonly packageAmount: number;
+  readonly brand: string | null;
+  readonly category: string;
+  /** Balení tak, jak je uvádí leták („1 l“, „250 g“, „8 rolí“, „1 kg“). */
+  readonly packageSize: { readonly amount: number; readonly unit: PackageUnit };
   readonly pricingMode: PricingMode;
 }
 
-/** Spec §19.1 */
+/** Spec §19.1 (+ brand/category pro import) */
 export const PRODUCTS: Readonly<Record<string, ProductMeta>> = {
   prd_mleko: {
     canonicalName: 'Mléko polotučné',
-    baseUnit: 'ML',
-    packageAmount: 1000,
+    brand: 'Madeta',
+    category: 'Mléčné výrobky',
+    packageSize: { amount: 1, unit: 'l' },
     pricingMode: 'PACKAGE',
   },
   prd_maslo: {
     canonicalName: 'Máslo',
-    baseUnit: 'G',
-    packageAmount: 250,
+    brand: 'Madeta',
+    category: 'Mléčné výrobky',
+    packageSize: { amount: 250, unit: 'g' },
     pricingMode: 'PACKAGE',
   },
   prd_kureci_prsa: {
     canonicalName: 'Kuřecí prsa',
-    baseUnit: 'G',
-    packageAmount: 1000,
+    brand: null,
+    category: 'Maso a ryby',
+    packageSize: { amount: 1, unit: 'kg' },
     pricingMode: 'WEIGHT',
   },
   prd_banany: {
     canonicalName: 'Banány',
-    baseUnit: 'G',
-    packageAmount: 1000,
+    brand: null,
+    category: 'Ovoce a zelenina',
+    packageSize: { amount: 1, unit: 'kg' },
     pricingMode: 'WEIGHT',
   },
   prd_toaletni_papir: {
     canonicalName: 'Toaletní papír 8 rolí',
-    baseUnit: 'PCS',
-    packageAmount: 8,
+    brand: 'Zewa',
+    category: 'Drogerie',
+    packageSize: { amount: 8, unit: 'role' },
     pricingMode: 'PACKAGE',
   },
   prd_coca_cola: {
     canonicalName: 'Coca-Cola Original 1.5 l',
-    baseUnit: 'ML',
-    packageAmount: 1500,
+    brand: 'Coca-Cola',
+    category: 'Nápoje',
+    packageSize: { amount: 1.5, unit: 'l' },
     pricingMode: 'PACKAGE',
   },
 };
@@ -65,23 +73,39 @@ export const PRICE_TABLE: Readonly<Record<string, Partial<Record<ChainCode, numb
   prd_coca_cola: { ALBERT: 3290, KAUFLAND: 3490, BILLA: 3390 },
 };
 
+/** Běžné (neakční) ceny pro výpočet `discountPercent` (spec §9.7). */
+export const REGULAR_PRICE_TABLE: Readonly<Record<string, Partial<Record<ChainCode, number>>>> = {
+  prd_mleko: { LIDL: 2490, ALBERT: 2790, KAUFLAND: 2990, BILLA: 2890 },
+  prd_maslo: { LIDL: 5990, ALBERT: 5890, KAUFLAND: 5490, BILLA: 6190 },
+  prd_kureci_prsa: { LIDL: 14900, ALBERT: 15500, KAUFLAND: 15200, BILLA: 16500 },
+  prd_banany: { LIDL: 3490, ALBERT: 3990, KAUFLAND: 4290, BILLA: 4190 },
+  prd_toaletni_papir: { LIDL: 10990, ALBERT: 10490, KAUFLAND: 8990 },
+  prd_coca_cola: { ALBERT: 3690, KAUFLAND: 3790, BILLA: 3890 },
+};
+
 function metaFor(productId: string): ProductMeta {
   const meta = PRODUCTS[productId];
   if (meta === undefined) throw new Error(`Fixture nezná produkt ${productId}`);
   return meta;
 }
 
+/** Odvozené base jednotky produktu (spec §10.2) — jediný zdroj pravdy pro seed i optimalizaci. */
+export function productPackage(productId: string): NormalizedPackage {
+  const meta = metaFor(productId);
+  return normalizePackageSize(meta.packageSize, meta.pricingMode);
+}
+
 /** Spec §19.4 převedené na nabídky (produkt × řetězec). */
 export const OFFERS: readonly OfferInput[] = Object.entries(PRICE_TABLE).flatMap(([productId, byChain]) =>
   Object.entries(byChain).map(([chainCode, priceMinor]) => {
-    const meta = metaFor(productId);
+    const pack = productPackage(productId);
     return {
       productId,
       chainCode,
       priceMinor: priceMinor as number,
-      packageAmount: meta.packageAmount,
-      baseUnit: meta.baseUnit,
-      pricingMode: meta.pricingMode,
+      packageAmount: pack.packageAmount,
+      baseUnit: pack.baseUnit,
+      pricingMode: pack.pricingMode,
     };
   }),
 );
@@ -94,6 +118,11 @@ export const SHOPPING_LIST: readonly OptimizerItem[] = [
   { productId: 'prd_banany', quantityBase: 2000, rawText: 'Banány' },
   { productId: 'prd_toaletni_papir', quantityBase: 8, rawText: 'Toaletní papír' },
 ];
+
+/** Spec §19.3 — letáky řetězců (stejné období pro celou fixture). */
+export const LEAFLET_PERIOD = { validFrom: '2026-10-14', validTo: '2026-10-20' } as const;
+
+export const CHAINS: readonly ChainCode[] = ['LIDL', 'ALBERT', 'KAUFLAND', 'BILLA'];
 
 /** Spec §19.6 — očekávané hodnoty, na kterých stojí golden testy. */
 export const EXPECTED = {
