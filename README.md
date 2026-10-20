@@ -15,6 +15,8 @@ npm run build --workspace=@slevari/shared    # API i mobil importují dist/
 npm run db:migrate --workspace=@slevari/api  # aplikuje prisma/migrations
 npm run seed --workspace=@slevari/api        # 9 řetězců + 4 letáky + 22 akcí (idempotentní)
 npm run dev --workspace=@slevari/api         # http://localhost:3000/health
+npm run dev --workspace=@slevari/web         # http://localhost:3001 (web)
+npm run dev --workspace=@slevari/mobile      # Expo
 
 curl -s localhost:3000/health
 ```
@@ -25,12 +27,24 @@ Bez Dockeru lze DB ověřit embedded Postgresem (stáhne si binárku, nic neinst
 npm run db:verify --workspace=@slevari/api   # migrace + 2× seed + kontrola unaccent/trgm
 ```
 
-Testy (160 testů, bez DB):
+Testy (177 testů, bez DB):
 
 ```bash
 npm test
 npm run typecheck --workspaces --if-present
 ```
+
+## Web (Next.js, M4)
+
+| Routa | Obrazovka |
+|---|---|
+| `/` | F1 přehled letáků s filtrem řetězce |
+| `/leaflets/[id]` | F1 detail: kategorie, stránkování, jednotkové ceny, slevy |
+| `/search` | F2 hledání s `meta.match` a návrhy |
+| `/login` | registrace/přihlášení (JWT + refresh) |
+| `/lists` · `/lists/[id]` | F3 seznamy a položky, potvrzení shody, F4 optimalizace s paywallem |
+
+Spuštění: `npm run dev --workspace=@slevari/web` (očekává API na `http://localhost:3000`, jde změnit přes `NEXT_PUBLIC_API_URL`).
 
 ## API (M2 + M3)
 

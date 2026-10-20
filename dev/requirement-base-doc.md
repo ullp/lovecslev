@@ -340,7 +340,7 @@
 | Testy | Jest (unit), Supertest (e2e) | pokrytí doménové logiky ≥ 80 % |
 
 ### 8.2 Struktura repozitáře (monorepo, npm workspaces)
-> **Stav (M0):** hotové `packages/shared`, `apps/api`, `apps/mobile`, `docker-compose.yml` a CI. `apps/web` vznikne v M4.
+> **Stav (M0–M4):** hotové `packages/shared`, `packages/seed-data`, `apps/api`, `apps/mobile`, `apps/web`, `docker-compose.yml` a CI.
 ```
 slevarikoleme/
 ├─ apps/
@@ -1089,6 +1089,8 @@ Kontrolní přepočet unit price: Kaufland máslo `4490 / 250 × 1000 = 17960` �
 | **M3** Seznamy v DB: CRUD, limity FREE (1 seznam/30 položek), matching položek, potvrzení shody, IDOR ochrana | ✅ unit + e2e | `apps/api/src/lists/` |
 | **M3** `POST /v1/lists/:id/optimize` nad DB: ceny z akcí, tarif ze `subscriptions`, `date` (D24), `includeVariantB` → 403 pro FREE | ✅ live: FREE A=32 710 (KAUFLAND), PREMIUM B=27 910, úspora 4 800 | `apps/api/src/lists/lists.service.ts` |
 | **M3** `subscriptions.user_id` UNIQUE (spec §9.9) | ✅ migrace `0003_subscription_user_unique` | `prisma/migrations/` |
+| **M4** `apps/web` (Next.js 14, App Router): F1 letáky + detail, F2 hledání, F3 seznamy, F4 optimalizace s paywallem, auth | ✅ `next build` prošel (6 rout), 17 testů lib vrstvy, 4 routy vrací 200 | `apps/web/` |
+| **M4** sjednocení Reactu na 18.2 kvůli duplicitním kopiím (Expo vs. Next) | ✅ `overrides` v root `package.json` | `package.json` |
 | `apps/web` (Next.js) | ⛔ M4 | — |
 
 **Ověřeno na Postgresu 16 (`db:verify`):** `mliko → Mléko polotučné`, `toaletak → Toaletní papír 8 rolí`, `kureci → Kuřecí prsa`; `similarity('mliko','mleko') = 0,33` (proto §12.1 prahy 0,60/0,40 + edit-distance pravidlo).
