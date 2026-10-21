@@ -50,6 +50,11 @@ jobs:
       - name: Build API
         run: npm run build --workspace=@lovecslev/api
 
+      # Produkční build webu odhalí chyby, které dev server skryje
+      # (prerender, useSearchParams, server/client hranice).
+      - name: Build web
+        run: npm run build --workspace=@lovecslev/web
+
   db-verify:
     name: DB migrations & seed (embedded Postgres)
     runs-on: ubuntu-latest

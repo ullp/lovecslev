@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '@/lib/api-client';
 import { describeError } from '@/lib/errors';
 import { formatCzk, formatDate, formatUnitPriceMinor } from '@/lib/format';
@@ -14,19 +14,22 @@ export default function SearchPage(): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function submit(event: React.FormEvent): Promise<void> {
-    event.preventDefault();
-    if (query.trim().length < 2) {
+  async function runSearch(term: string): Promise<void> {
+    const trimmed = term.trim();
+    if (trimmed.length < 2) {
       setError('Zadejte alespoň 2 znaky.');
       return;
     }
 
+    setQuery(trimmed);
     setBusy(true);
     setError(null);
     try {
-      const response = await api.search(query.trim(), { limit: 20 });
+      const response = await api.search(trimmed, { limit: 20 });
       setResults(response.data);
       setMeta(response.meta);
+      // Výsledky jde sdílet odkazem (?q=) a obnovit stránku bez ztráty hledání.
+      window.history.replaceState(null, '', `/search?q=${encodeURIComponent(trimmed)}`);
     } catch (cause) {
       setError(describeError(cause));
       setResults([]);
@@ -35,6 +38,21 @@ export default function SearchPage(): JSX.Element {
       setBusy(false);
     }
   }
+
+  async function submit(event: React.FormEvent): Promise<void> {
+    event.preventDefault();
+    await runSearch(query);
+  }
+
+  useEffect(() => {
+    // Deep link /search?q=… rovnou hledá (dřív se pouze vyplnil input).
+    const initial = new URLSearchParams(window.location.search).get('q') ?? '';
+    if (initial.trim().length >= 2) {
+      void runSearch(initial);
+    }
+    // Spustit jen při mountu; runSearch je stabilní v rámci životnosti stránky.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div>
@@ -68,7 +86,7 @@ export default function SearchPage(): JSX.Element {
                   key={suggestion.productId}
                   className="secondary"
                   style={{ marginLeft: index === 0 ? 0 : 6, padding: '2px 8px' }}
-                  onClick={() => setQuery(suggestion.name)}
+                  onClick={() => void runSearch(suggestion.name)}
                 >
                   {suggestion.name}
                 </button>
