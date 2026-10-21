@@ -2,22 +2,25 @@
 /**
  * Guard proti návratu původního názvu projektu.
  *
- * Projekt se jmenuje "Lovec Slev" (npm scope @lovecslev). Staré označení
- * (repo slevarikoleme, scope @slevari, produkt "Slevaři kolem mě") se už
- * nesmí objevit v žádném verzovaném souboru.
+ * Projekt se jmenuje "Lovec Slev" (npm scope @lovecslev). Původní označení
+ * repozitáře, npm scope ani produktu se už nesmí objevit v žádném verzovaném
+ * souboru — viz `npm run branding:check`.
  *
- * Spouští se v CI: `npm run branding:check`.
  * Kontrolují se jen soubory z `git ls-files`, takže lokální build artefakty
  * (.next, dist, coverage) do výsledku nevstupují.
+ *
+ * Pozor: tento soubor se také skenuje, proto se hledané řetězce skládají
+ * z částí — kdyby tu byly jako literály, guard by našel sám sebe.
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
-/** Tento skript obsahuje hledané vzory záměrně, proto se sám přeskakuje. */
-const SELF = 'scripts/check-branding.mjs';
+/** Poskládá hledaný výraz z částí, aby v tomto souboru nebyl nikdy souvisle. */
+const skladat = (casti) => new RegExp(casti.join(''), 'i');
 
-/** Původní označení: "slevari" (repo/scope) a "slevaři" (produkt). */
-const LEGACY = [/slevari/i, /slevaři/i];
+/** Původní označení: varianta s "i" (repo, npm scope) a s "ř" (produkt). */
+const LEGACY = [skladat(['sle', 'va', 'ri']), skladat(['sle', 'va', 'ři'])];
+
 
 /** Co naopak v repu být MUSÍ — jinak přejmenování nedrží pohromadě. */
 const REQUIRED = [
@@ -34,8 +37,7 @@ const isBinary = (buffer) => buffer.subarray(0, 8000).includes(0);
 const tracked = execFileSync('git', ['ls-files', '-z'], { encoding: 'buffer' })
   .toString('utf8')
   .split('\0')
-  .filter(Boolean)
-  .filter((file) => file !== SELF);
+  .filter(Boolean);
 
 const findings = [];
 for (const file of tracked) {
