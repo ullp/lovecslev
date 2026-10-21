@@ -14,7 +14,8 @@
   },
   "scripts": {
     "test": "npm run test --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "branding:check": "node scripts/check-branding.mjs"
   },
   "engines": {
     "node": ">=20"
