@@ -5,7 +5,7 @@ import {
   createParamDecorator,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { DomainError } from '@slevari/shared';
+import { DomainError } from '@lovecslev/shared';
 import type { AuthenticatedUser } from './auth.types';
 
 interface RequestWithUser {

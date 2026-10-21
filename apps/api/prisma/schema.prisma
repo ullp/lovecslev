@@ -1,4 +1,4 @@
-// Slevaři kolem mě — datový model dle dev/requirement-base-doc.md §9.
+// Lovec Slev — datový model dle dev/requirement-base-doc.md §9.
 // POZOR: `products.search_text` (GENERATED), GIN/trgm indexy a kontrolní CHECK
 // constrainty jsou doplněné v migraci (Prisma je neumí vyjádřit).
 

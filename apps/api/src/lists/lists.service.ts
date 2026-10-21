@@ -8,7 +8,7 @@ import {
   type BaseUnit,
   type OfferInput,
   type OptimizerWarning,
-} from '@slevari/shared';
+} from '@lovecslev/shared';
 import {
   CATALOG_REPOSITORY,
   SEARCH_PORT,

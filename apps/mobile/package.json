@@ -1,5 +1,5 @@
 {
-  "name": "@slevari/mobile",
+  "name": "@lovecslev/mobile",
   "version": "0.1.0",
   "private": true,
   "main": "expo/AppEntry.js",
@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@slevari/shared": "*",
+    "@lovecslev/shared": "*",
     "expo": "~51.0.28",
     "expo-status-bar": "~1.12.1",
     "react": "18.2.0",

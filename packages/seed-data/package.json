@@ -1,5 +1,5 @@
 {
-  "name": "@slevari/seed-data",
+  "name": "@lovecslev/seed-data",
   "version": "0.1.0",
   "private": true,
   "description": "Referenční letáky (spec §19) pro seed, import a testy",
@@ -15,6 +15,6 @@
     "typecheck": "node -e \"require('./index.js')\""
   },
   "dependencies": {
-    "@slevari/shared": "*"
+    "@lovecslev/shared": "*"
   }
 }

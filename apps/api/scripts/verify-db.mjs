@@ -9,19 +9,19 @@ import { execFileSync } from 'node:child_process';
 import { PrismaClient } from '@prisma/client';
 
 const PORT = 55432;
-const DB_URL = `postgresql://slevari:slevari@localhost:${PORT}/slevari`;
+const DB_URL = `postgresql://lovecslev:lovecslev@localhost:${PORT}/lovecslev`;
 
 const pg = new EmbeddedPostgres({
   databaseDir: '.tmp/pgdata',
-  user: 'slevari',
-  password: 'slevari',
+  user: 'lovecslev',
+  password: 'lovecslev',
   port: PORT,
   persistent: false,
 });
 
 await pg.initialise();
 await pg.start();
-await pg.createDatabase('slevari');
+await pg.createDatabase('lovecslev');
 
 const env = { ...process.env, DATABASE_URL: DB_URL };
 const run = (command, args) =>

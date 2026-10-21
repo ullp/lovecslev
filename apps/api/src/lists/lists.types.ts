@@ -1,4 +1,4 @@
-import type { BaseUnit } from '@slevari/shared';
+import type { BaseUnit } from '@lovecslev/shared';
 
 export type ListMatchStatus = 'RESOLVED_AUTO' | 'RESOLVED_CONFIRMED' | 'SUGGESTED' | 'UNRESOLVED';
 export type ListMatchMethod = 'EXACT' | 'ALIAS' | 'TRIGRAM' | 'AI' | 'USER' | 'NONE';

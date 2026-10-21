@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { createHash, randomBytes } from 'node:crypto';
-import { DomainError } from '@slevari/shared';
+import { DomainError } from '@lovecslev/shared';
 import { ACCESS_TOKEN_TTL_SECONDS, REFRESH_TOKEN_TTL_DAYS } from './jwt-config';
 import { REFRESH_TOKEN_REPOSITORY, type RefreshTokenRepository, type TokenPair } from './auth.types';
 

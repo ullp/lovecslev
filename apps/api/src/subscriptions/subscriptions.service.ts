@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { Plan } from '@slevari/shared';
+import type { Plan } from '@lovecslev/shared';
 import { PrismaService } from '../prisma/prisma.service';
 
 /**

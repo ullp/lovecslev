@@ -1,5 +1,5 @@
 import { Injectable, type CanActivate, type ExecutionContext } from '@nestjs/common';
-import { DomainError } from '@slevari/shared';
+import { DomainError } from '@lovecslev/shared';
 import type { AuthenticatedUser } from '../auth/auth.types';
 import { SubscriptionsService } from './subscriptions.service';
 

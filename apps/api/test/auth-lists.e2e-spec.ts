@@ -1,7 +1,7 @@
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import type { Plan } from '@slevari/shared';
+import type { Plan } from '@lovecslev/shared';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.factory';
 import { REFRESH_TOKEN_REPOSITORY, USER_REPOSITORY } from '../src/auth/auth.types';

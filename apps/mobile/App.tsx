@@ -10,7 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { formatCzk } from '@slevari/shared';
+import { formatCzk } from '@lovecslev/shared';
 import { api, type LeafletSummary, type NearbyStore, type SearchMeta, type SearchProduct } from './src/api';
 
 type Tab = 'leaflets' | 'search' | 'stores';
@@ -28,7 +28,7 @@ export default function App(): JSX.Element {
     <SafeAreaView style={styles.safe}>
       <StatusBar style="dark" />
       <View style={styles.header}>
-        <Text style={styles.title}>Slevaři kolem mě</Text>
+        <Text style={styles.title}>Lovec Slev</Text>
         <Text style={styles.subtitle}>
           {tab === 'leaflets' ? 'Aktuální letáky' : tab === 'search' ? 'Hledání produktu' : 'Obchody v okolí'}
         </Text>

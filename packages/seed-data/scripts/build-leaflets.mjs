@@ -1,10 +1,10 @@
 /**
  * Generátor referenčních letáků (spec §19) z doménové fixture.
- * Jediný zdroj pravdy jsou PRICE_TABLE / REGULAR_PRICE_TABLE / PRODUCTS v @slevari/shared,
+ * Jediný zdroj pravdy jsou PRICE_TABLE / REGULAR_PRICE_TABLE / PRODUCTS v @lovecslev/shared,
  * takže seed nemůže „utéct“ od golden testů.
  *
- * Spuštění: npm run build --workspace=@slevari/seed-data
- * (vyžaduje předchozí build @slevari/shared)
+ * Spuštění: npm run build --workspace=@lovecslev/seed-data
+ * (vyžaduje předchozí build @lovecslev/shared)
  */
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
@@ -17,7 +17,7 @@ const {
   REGULAR_PRICE_TABLE,
   CHAINS,
   LEAFLET_PERIOD,
-} = require('@slevari/shared');
+} = require('@lovecslev/shared');
 
 const outDir = path.join(import.meta.dirname, '..', 'leaflets');
 fs.mkdirSync(outDir, { recursive: true });

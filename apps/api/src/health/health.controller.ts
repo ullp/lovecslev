@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 
 export interface HealthResponse {
   readonly status: 'ok';
-  readonly service: 'slevari-api';
+  readonly service: 'lovec-slev-api';
   readonly timestamp: string;
 }
 
@@ -10,6 +10,6 @@ export interface HealthResponse {
 export class HealthController {
   @Get()
   check(): HealthResponse {
-    return { status: 'ok', service: 'slevari-api', timestamp: new Date().toISOString() };
+    return { status: 'ok', service: 'lovec-slev-api', timestamp: new Date().toISOString() };
   }
 }

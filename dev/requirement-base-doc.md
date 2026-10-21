@@ -1,4 +1,4 @@
-# Slevaři kolem mě — AI-READY SPECIFIKACE
+# Lovec Slev — AI-READY SPECIFIKACE
 
 | Metadata | Hodnota |
 |---|---|
@@ -40,7 +40,7 @@
 
 ## 1. Vize produktu
 
-**Slevaři kolem mě** je mobilní a webová aplikace pro české zákazníky, která agreguje slevové letáky a akční nabídky obchodních řetězců a pomáhá najít **nejlevnější realizovatelnou variantu nákupu** podle nákupního seznamu uživatele.
+**Lovec Slev** je mobilní a webová aplikace pro české zákazníky, která agreguje slevové letáky a akční nabídky obchodních řetězců a pomáhá najít **nejlevnější realizovatelnou variantu nákupu** podle nákupního seznamu uživatele.
 
 **Hodnota:** uživatel nemusí procházet 5–9 letáků a počítat ceny ručně. Zadá seznam (nebo ho nechá vygenerovat) a dostane (a) cenu v jednom obchodě, (b) nejlevnější kombinaci obchodů včetně úspory.
 
@@ -347,7 +347,7 @@
 ### 8.2 Struktura repozitáře (monorepo, npm workspaces)
 > **Stav (M0–M4):** hotové `packages/shared`, `packages/seed-data`, `apps/api`, `apps/mobile`, `apps/web`, `docker-compose.yml` a CI.
 ```
-slevarikoleme/
+lovecslev/
 ├─ apps/
 │  ├─ api/                  # NestJS
 │  │  ├─ prisma/            # schema.prisma + migrations (spec §9)
@@ -685,7 +685,7 @@ Billa není kandidátem varianty A (chybí Toaletní papír).
 1. **Normalizace dotazu:** trim, lower, odstranění diakritiky (`unaccent`), sjednocení mezer, odstranění interpunkce, sjednocení zápisu jednotek (`1,5l` → `1.5 l`).
 2. **Exact match** na `products.canonical_name` → `confidence = 1.00`, `method = EXACT`.
 3. **Alias match** na `product_aliases.alias` → `1.00`, `method = ALIAS` (např. `toaletak` → `Toaletní papír 8 rolí`, `coca cola` → `Coca-Cola Original 1.5 l`).
-4. **Trigram fuzzy** — kandidáty hledá DB přes `word_similarity(normalizedQuery, search_text)` (pg_trgm); rozhodnutí o shodě dělá čistá funkce v `@slevari/shared`.
+4. **Trigram fuzzy** — kandidáty hledá DB přes `word_similarity(normalizedQuery, search_text)` (pg_trgm); rozhodnutí o shodě dělá čistá funkce v `@lovecslev/shared`.
    - Prahy: `word_similarity ≥ 0.60` → `RESOLVED_AUTO`, `0.40–0.60` → `SUGGESTED`, `< 0.40` → `UNRESOLVED`.
    - **Změřené hodnoty (Postgres 16, pg_trgm) — závazné pro testy:**
 
@@ -888,7 +888,7 @@ fetch → raw snapshot (SHA-256) → parse → normalize → JSON kontrakt (§5 
 - `FileSnapshotStore` ukládá `storage/raw/{chain}/{validFrom}/{sha256}.html` (SHA-256 obsahu, re-parsování bez refetchování).
 - Orchestrátor `LeafletScrapeService`: právní gate → circuit breaker → snapshot → parse → import s quarantine; stavy `IMPORTED` / `UNCHANGED` / `QUARANTINED` / `SKIPPED_LEGAL` / `SKIPPED_PAUSED` / `SKIPPED_NO_ADAPTER` / `FAILED`.
 - Circuit breaker je **persistentní** v `chains.scrape_failures` + `chains.scrape_paused_until`: 2 selhání za sebou → pauza 6 h; úspěch počítadlo resetuje.
-- CLI: `SCRAPE_SOURCE=fixture npm run scrape --workspace=@slevari/api -- --valid-from=2026-10-21 --valid-to=2026-10-27` (exit 1 při `failed > 0`).
+- CLI: `SCRAPE_SOURCE=fixture npm run scrape --workspace=@lovecslev/api -- --valid-from=2026-10-21 --valid-to=2026-10-27` (exit 1 při `failed > 0`).
 
 **Rizika a mitigace:**
 | Riziko | Mitigace |
@@ -1073,7 +1073,7 @@ LIDL, KAUFLAND, ALBERT, BILLA (4 letáky).
 Kontrolní přepočet unit price: Kaufland máslo `4490 / 250 × 1000 = 17960` → 179,60 Kč/kg.
 
 ### 19.7 Prodejny (F5)
-`STORE_SEED` v `@slevari/shared` obsahuje **9 prodejen** v Praze: LIDL ×2, BILLA ×2, PENNY ×1, ALBERT ×2, KAUFLAND ×2 (souřadnice jsou přibližné, produkční data = Q1).
+`STORE_SEED` v `@lovecslev/shared` obsahuje **9 prodejen** v Praze: LIDL ×2, BILLA ×2, PENNY ×1, ALBERT ×2, KAUFLAND ×2 (souřadnice jsou přibližné, produkční data = Q1).
 Očekávané výsledky `GET /v1/stores/nearby?lat=50.081&lng=14.427&radiusKm=5&activeOn=2026-10-20`: **9 prodejen**, seřazené dle vzdálenosti, max **3 971 m**, PENNY má `hasActiveLeaflet = false` (bez letáku), dotaz z Brna vrací 0.
 
 ---
@@ -1099,15 +1099,15 @@ Očekávané výsledky `GET /v1/stores/nearby?lat=50.081&lng=14.427&radiusKm=5&a
 | Co | Stav | Kde |
 |---|---|---|
 | Doménové jádro (část M3, bez DB) — peníze, jednotky, jednotková cena, optimalizátor | ✅ hotovo | `packages/shared/src/{errors,money,units,pricing,optimizer}.ts` |
-| Fixture §19 jako spustitelný a exportovaný kód | ✅ hotovo | `packages/shared/src/fixtures/mvpFixture.ts` (`import { OFFERS, SHOPPING_LIST } from '@slevari/shared'`) |
+| Fixture §19 jako spustitelný a exportovaný kód | ✅ hotovo | `packages/shared/src/fixtures/mvpFixture.ts` (`import { OFFERS, SHOPPING_LIST } from '@lovecslev/shared'`) |
 | Testy jádra (unit + golden + determinismus + výkon) | ✅ 56 testů, coverage 95 % stmts / 91 % branches | `packages/shared/src/__tests__/*.test.ts` |
 | **M0** scaffold: git, `apps/api` (NestJS), `apps/mobile` (Expo), `docker-compose`, CI | ✅ hotovo | `apps/*`, `docker-compose.yml`, `.github/workflows/ci.yml` |
 | API testy (unit + e2e přes Supertest, včetně paywallu D18 a mapování doménových chyb) | ✅ 25 testů | `apps/api/src/**/*.spec.ts`, `apps/api/test/*.e2e-spec.ts` |
 | **M1** Postgres schéma (§9) + migrace `0001_init` (CHECKy, `search_text` GENERATED, GIN trgm, partial unique) | ✅ hotovo, aplikováno na Postgres 16 | `apps/api/prisma/` |
 | **M1** Validace importu §14.2 + mapper + checksum + idempotence + quarantine | ✅ hotovo | `packages/shared/src/import/*`, `apps/api/src/import/*` |
-| **M1** Seed data (`@slevari/seed-data`) + CLI `npm run seed` | ✅ hotovo: 9 řetězců, 4 letáky, 22 akcí, 6 produktů, 154 bodů historie, 12 aliasů | `packages/seed-data/`, `apps/api/src/cli/seed.ts` |
-| Ověření DB bez Dockeru (`embedded-postgres`, 2× seed = idempotence) | ✅ `npm run db:verify --workspace=@slevari/api` | `apps/api/scripts/verify-db.mjs` |
-| **M2** Matching pipeline §12 (normalizace, aliasy, pg_trgm kompatibilní trigramy, Damerau-Levenshtein) | ✅ 94 testů v `@slevari/shared` | `packages/shared/src/matching/*` |
+| **M1** Seed data (`@lovecslev/seed-data`) + CLI `npm run seed` | ✅ hotovo: 9 řetězců, 4 letáky, 22 akcí, 6 produktů, 154 bodů historie, 12 aliasů | `packages/seed-data/`, `apps/api/src/cli/seed.ts` |
+| Ověření DB bez Dockeru (`embedded-postgres`, 2× seed = idempotence) | ✅ `npm run db:verify --workspace=@lovecslev/api` | `apps/api/scripts/verify-db.mjs` |
+| **M2** Matching pipeline §12 (normalizace, aliasy, pg_trgm kompatibilní trigramy, Damerau-Levenshtein) | ✅ 94 testů v `@lovecslev/shared` | `packages/shared/src/matching/*` |
 | **M2** `SearchPort` + `PostgresSearchAdapter` (word_similarity) + `ElasticSearchAdapter` + fallback (D21) | ✅ SQL ověřen na Postgresu, ES adaptér testovaný s fake klientem | `apps/api/src/catalog/*` |
 | **M2** Endpointy F1/F2: `/v1/chains`, `/v1/leaflets`, `/v1/leaflets/:id/products`, `/v1/products/search` | ✅ 43 testů API (e2e přes Supertest) | `apps/api/src/catalog/` |
 | **M3** Auth: registrace/login/refresh/logout, Argon2id, JWT access 15 min, rotace refresh tokenů (D23) | ✅ 7 unit + e2e, live ověřeno | `apps/api/src/auth/`, migrace `0002_refresh_tokens` |
@@ -1133,5 +1133,5 @@ Očekávané výsledky `GET /v1/stores/nearby?lat=50.081&lng=14.427&radiusKm=5&a
 
 **Zjištění z M1 (zapsáno do §12.1):** reálné pg_trgm `similarity('mliko','mleko') = 0,33` — původní předpoklad „≈0,8“ byl chybný, proto jsou prahy nastavené na 0,60/0,35 a pro krátké tokeny platí pravidlo edit-distance ≤ 1.
 
-Ověření (bez DB): `npm install && npm run build --workspace=@slevari/shared && npm test` (Node ≥ 20).
-Live kontrola: `npm run dev --workspace=@slevari/api` → `GET /health`, `POST /v1/optimizer/preview`.
+Ověření (bez DB): `npm install && npm run build --workspace=@lovecslev/shared && npm test` (Node ≥ 20).
+Live kontrola: `npm run dev --workspace=@lovecslev/api` → `GET /health`, `POST /v1/optimizer/preview`.

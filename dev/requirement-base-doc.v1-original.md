@@ -1,4 +1,4 @@
-Vytvoř nyní projekt pro zadání AI pro: Slevaři kolem mě
+Vytvoř nyní projekt pro zadání AI pro: Lovec Slev
 Agregátor letáků a akcí z českých obchodů (Lidl, Albert, Kaufland, Billa).
 Uživatel zadá nákupní seznam a aplikace najde nejlevnější kombinaci obchodů.
 
@@ -6,9 +6,9 @@ Uživatel zadá nákupní seznam a aplikace najde nejlevnější kombinaci obcho
 
 Níže je kompletní zadání projektu, které můžeš vložit do Cline, Cursoru, Windsurfu nebo jiného AI vývojáře.
 
-Projekt: Slevaři kolem mě
+Projekt: Lovec Slev
 Vize produktu
-Slevaři kolem mě je mobilní a webová aplikace pro české zákazníky, která agreguje slevové letáky a akční nabídky obchodních řetězců a pomáhá uživatelům najít nejlevnější nákupní variantu podle jejich nákupního seznamu.
+Lovec Slev je mobilní a webová aplikace pro české zákazníky, která agreguje slevové letáky a akční nabídky obchodních řetězců a pomáhá uživatelům najít nejlevnější nákupní variantu podle jejich nákupního seznamu.
 
 Cílem je ušetřit lidem čas i peníze tím, že nemusí procházet několik letáků a porovnávat ceny ručně.
 

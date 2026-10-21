@@ -1,4 +1,4 @@
-import type { LeafletImportDto } from '@slevari/shared';
+import type { LeafletImportDto } from '@lovecslev/shared';
 
 /** Surový snapshot stránky/PDF — ukládá se jako důkaz obsahu (spec §14.5). */
 export interface RawSnapshot {

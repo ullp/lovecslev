@@ -1,4 +1,6 @@
-# Slevaři kolem mě
+# Lovec Slev
+
+[![GitHub](https://img.shields.io/badge/GitHub-ullp%2Flovecslev-181717?logo=github)](https://github.com/ullp/lovecslev)
 
 Agregátor letákových akcí českých řetězců a optimalizace nákupu podle nákupního seznamu.
 **Stav: M0 scaffold** (doménové jádro + API + mobilní shell + infrastruktura + CI).
@@ -11,12 +13,12 @@ Agregátor letákových akcí českých řetězců a optimalizace nákupu podle 
 ```bash
 npm install                                  # Node ≥ 20, npm workspaces
 docker compose up -d                         # Postgres 16, Redis 7, Elasticsearch 8
-npm run build --workspace=@slevari/shared    # API i mobil importují dist/
-npm run db:migrate --workspace=@slevari/api  # aplikuje prisma/migrations
-npm run seed --workspace=@slevari/api        # 9 řetězců + 4 letáky + 22 akcí (idempotentní)
-npm run dev --workspace=@slevari/api         # http://localhost:3000/health
-npm run dev --workspace=@slevari/web         # http://localhost:3001 (web)
-npm run dev --workspace=@slevari/mobile      # Expo
+npm run build --workspace=@lovecslev/shared    # API i mobil importují dist/
+npm run db:migrate --workspace=@lovecslev/api  # aplikuje prisma/migrations
+npm run seed --workspace=@lovecslev/api        # 9 řetězců + 4 letáky + 22 akcí (idempotentní)
+npm run dev --workspace=@lovecslev/api         # http://localhost:3000/health
+npm run dev --workspace=@lovecslev/web         # http://localhost:3001 (web)
+npm run dev --workspace=@lovecslev/mobile      # Expo
 
 curl -s localhost:3000/health
 ```
@@ -24,9 +26,9 @@ curl -s localhost:3000/health
 Bez Dockeru lze DB ověřit embedded Postgresem (stáhne si binárku, nic neinstaluje globálně):
 
 ```bash
-npm run db:verify --workspace=@slevari/api   # migrace + 2× seed + kontrola unaccent/trgm
-npm run alerts:evaluate --workspace=@slevari/api -- --date=2026-10-20   # P2 job (volitelně datum)
-SCRAPE_SOURCE=fixture npm run scrape --workspace=@slevari/api -- \
+npm run db:verify --workspace=@lovecslev/api   # migrace + 2× seed + kontrola unaccent/trgm
+npm run alerts:evaluate --workspace=@lovecslev/api -- --date=2026-10-20   # P2 job (volitelně datum)
+SCRAPE_SOURCE=fixture npm run scrape --workspace=@lovecslev/api -- \
   --valid-from=2026-10-21 --valid-to=2026-10-27                          # M7 scraping (offline fixture)
 ```
 
@@ -52,7 +54,7 @@ npm run typecheck --workspaces --if-present
 | `/stores` | F5 mapa (OpenStreetMap) + prodejny v okolí s vzdálenostmi |
 | `/advisor` | P1 AI poradce (text + rozpočet, zdroj odpovědi, návrh + optimalizace) |
 
-Spuštění: `npm run dev --workspace=@slevari/web` (očekává API na `http://localhost:3000`, jde změnit přes `NEXT_PUBLIC_API_URL`).
+Spuštění: `npm run dev --workspace=@lovecslev/web` (očekává API na `http://localhost:3000`, jde změnit přes `NEXT_PUBLIC_API_URL`).
 
 ## API (M2 + M3)
 

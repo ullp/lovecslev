@@ -1,4 +1,4 @@
-import type { BaseUnit, PricingMode } from '@slevari/shared';
+import type { BaseUnit, PricingMode } from '@lovecslev/shared';
 
 /** Pohledy pro API (spec §13) — peníze vždy haléře. */
 

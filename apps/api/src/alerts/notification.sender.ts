@@ -54,7 +54,7 @@ export class ExpoPushSender implements NotificationSender {
 
   async sendEmail(to: string, subject: string, text: string): Promise<boolean> {
     const apiKey = process.env.RESEND_API_KEY;
-    const from = process.env.RESEND_FROM ?? 'Slevaři kolem mě <no-reply@slevarikoleme.cz>';
+    const from = process.env.RESEND_FROM ?? 'Lovec Slev <no-reply@lovecslev.cz>';
 
     if (apiKey === undefined || apiKey === '') {
       this.logger.log(`[email fallback] ${to}: ${subject} — ${text}`);

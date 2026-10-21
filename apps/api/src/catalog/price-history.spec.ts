@@ -1,4 +1,4 @@
-import { DomainError } from '@slevari/shared';
+import { DomainError } from '@lovecslev/shared';
 import { buildPriceHistoryView, parseHistoryRange, shiftIsoDate } from './price-history';
 import type { PriceHistoryRow, ProductRecord } from './catalog.types';
 

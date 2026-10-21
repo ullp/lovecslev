@@ -1,4 +1,4 @@
-import { DomainError, unitLabel } from '@slevari/shared';
+import { DomainError, unitLabel } from '@lovecslev/shared';
 import type {
   PriceHistoryRow,
   PriceHistorySeries,

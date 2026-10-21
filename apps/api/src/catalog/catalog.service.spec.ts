@@ -1,4 +1,4 @@
-import { DomainError } from '@slevari/shared';
+import { DomainError } from '@lovecslev/shared';
 import type { SearchPort } from './catalog.repository';
 import { CatalogService } from './catalog.service';
 import type { SearchCandidateRecord } from './catalog.types';

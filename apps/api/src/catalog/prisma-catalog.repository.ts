@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { discountPercent, unitLabel, type BaseUnit, type PricingMode } from '@slevari/shared';
+import { discountPercent, unitLabel, type BaseUnit, type PricingMode } from '@lovecslev/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import type { CatalogRepository, LeafletProductsQuery } from './catalog.repository';
 import type {

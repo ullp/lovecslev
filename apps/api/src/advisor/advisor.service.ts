@@ -9,7 +9,7 @@ import {
   type AdvisorCatalogItem,
   type AdvisorDraft,
   type OfferInput,
-} from '@slevari/shared';
+} from '@lovecslev/shared';
 import { CATALOG_REPOSITORY, type CatalogRepository } from '../catalog/catalog.repository';
 import { todayInPrague } from '../common/date';
 import { applyPlanGating } from '../optimizer/plan-gate';

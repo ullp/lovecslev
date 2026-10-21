@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { formatCzk } from '@slevari/shared';
+import { formatCzk } from '@lovecslev/shared';
 import { CATALOG_REPOSITORY, type CatalogRepository } from '../catalog/catalog.repository';
 import { todayInPrague } from '../common/date';
 import {

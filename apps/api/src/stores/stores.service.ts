@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DomainError } from '@slevari/shared';
+import { DomainError } from '@lovecslev/shared';
 import { todayInPrague } from '../common/date';
 import {
   STORES_REPOSITORY,

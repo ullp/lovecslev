@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { mapLeaflet, validateLeaflet, type ImportIssue, type LeafletImportDto } from '@slevari/shared';
+import { mapLeaflet, validateLeaflet, type ImportIssue, type LeafletImportDto } from '@lovecslev/shared';
 import { leafletChecksum } from './checksum';
 import {
   LEAFLET_REPOSITORY,
@@ -35,7 +35,7 @@ const EMPTY_REPORT = (): ImportReport => ({
 
 /**
  * Import letáků (spec §14): validace → normalizace → idempotence → zápis.
- * Veškerá doménová logika je v @slevari/shared; tady je orchestrace a perzistence.
+ * Veškerá doménová logika je v @lovecslev/shared; tady je orchestrace a perzistence.
  */
 @Injectable()
 export class LeafletImportService {

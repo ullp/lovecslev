@@ -1,7 +1,7 @@
 import { readFile, mkdtemp, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { validateLeaflet } from '@slevari/shared';
+import { validateLeaflet } from '@lovecslev/shared';
 import { FileSnapshotStore } from './snapshot.store';
 import { LeafletScrapeService } from './leaflet-scrape.service';
 import { parseLidlHtml } from './adapters/lidl.adapter';
@@ -221,7 +221,7 @@ describe('LeafletScrapeService (spec §14.5)', () => {
 
 describe('FileSnapshotStore (spec §14.5)', () => {
   it('uloží snapshot do <root>/<chain>/<date>/<sha256>.<ext>', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'slevari-snap-'));
+    const dir = await mkdtemp(join(tmpdir(), 'lovecslev-snap-'));
     const store = new FileSnapshotStore(dir);
 
     const saved = await store.save(

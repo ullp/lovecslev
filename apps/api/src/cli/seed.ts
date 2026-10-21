@@ -1,14 +1,14 @@
 /**
  * CLI seed (spec §14.1, §19):
  *   1) upsertne číselník řetězců (9 řetězců, 4 s `isMvp`),
- *   2) importuje referenční letáky z @slevari/seed-data (idempotentně),
+ *   2) importuje referenční letáky z @lovecslev/seed-data (idempotentně),
  *   3) vypíše report dle §14.4 a skončí nenulovým exit kódem při jakékoli chybě.
  *
- * Spuštění: npm run seed --workspace=@slevari/api   (vyžaduje DATABASE_URL + migrace)
+ * Spuštění: npm run seed --workspace=@lovecslev/api   (vyžaduje DATABASE_URL + migrace)
  */
 import 'reflect-metadata';
-import { PRODUCT_ALIASES, PRODUCTS, STORE_SEED } from '@slevari/shared';
-import { leaflets } from '@slevari/seed-data';
+import { PRODUCT_ALIASES, PRODUCTS, STORE_SEED } from '@lovecslev/shared';
+import { leaflets } from '@lovecslev/seed-data';
 import { CHAIN_SEED } from '../import/chain-seed';
 import { LeafletImportService } from '../import/leaflet-import.service';
 import { PrismaLeafletRepository } from '../import/prisma-leaflet.repository';

@@ -1,4 +1,4 @@
-import type { Plan } from '@slevari/shared';
+import type { Plan } from '@lovecslev/shared';
 import type { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { InMemoryCatalogRepository } from '../../test/support/in-memory-catalog.repository';
 import { AdvisorService } from './advisor.service';

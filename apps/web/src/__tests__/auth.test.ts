@@ -33,8 +33,8 @@ describe('auth store (localStorage)', () => {
   });
 
   it('poškozený JSON nespadne, jen vrátí null', () => {
-    localStorage.setItem('slevari.tokens', '{nevalidní');
-    localStorage.setItem('slevari.user', JSON.stringify(AUTH.user));
+    localStorage.setItem('lovecslev.tokens', '{nevalidní');
+    localStorage.setItem('lovecslev.user', JSON.stringify(AUTH.user));
     expect(readAuth()).toBeNull();
   });
 

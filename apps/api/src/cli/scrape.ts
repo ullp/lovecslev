@@ -1,7 +1,7 @@
 /**
  * CLI scraping (spec §14.5): právní gate + circuit breaker + snapshot + import.
  * Spuštění:
- *   SCRAPE_SOURCE=fixture npm run scrape --workspace=@slevari/api -- --valid-from=2026-10-21 --valid-to=2026-10-27
+ *   SCRAPE_SOURCE=fixture npm run scrape --workspace=@lovecslev/api -- --valid-from=2026-10-21 --valid-to=2026-10-27
  */
 import 'reflect-metadata';
 import { LidlHtmlAdapter, FileFixtureAdapter } from '../scraping/adapters/lidl.adapter';

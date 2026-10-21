@@ -1,4 +1,4 @@
-import { formatCzk } from '@slevari/shared';
+import { formatCzk } from '@lovecslev/shared';
 import type { BaseUnit } from './types';
 
 export { formatCzk };

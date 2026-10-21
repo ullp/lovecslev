@@ -1,5 +1,5 @@
-import { leaflets } from '@slevari/seed-data';
-import { validateLeaflet, type LeafletImportDto } from '@slevari/shared';
+import { leaflets } from '@lovecslev/seed-data';
+import { validateLeaflet, type LeafletImportDto } from '@lovecslev/shared';
 import { InMemoryLeafletRepository } from '../../test/support/in-memory-leaflet.repository';
 import { LeafletImportService } from './leaflet-import.service';
 

@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { DomainError } from '@slevari/shared';
+import { DomainError } from '@lovecslev/shared';
 import { NOTIFICATION_SENDER, type NotificationSender } from '../alerts/notification.sender';
 import {
   HOUSEHOLD_REPOSITORY,
@@ -88,7 +88,7 @@ export class HouseholdsService {
 
     await this.notifier.sendEmail(
       normalized,
-      'Pozvánka do domácnosti na Slevaři kolem mě',
+      'Pozvánka do domácnosti na Lovec Slev',
       `Byli jste pozváni do domácnosti "${household.name}". Token pro přijetí: ${token} (platí ${INVITATION_TTL_DAYS} dní).`,
     );
 

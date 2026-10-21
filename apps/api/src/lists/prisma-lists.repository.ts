@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { BaseUnit } from '@slevari/shared';
+import type { BaseUnit } from '@lovecslev/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import type { ListsRepository } from './lists.repository';
 import type { AddItemInput, ListItemRecord, ListRecord, ListSummary } from './lists.types';

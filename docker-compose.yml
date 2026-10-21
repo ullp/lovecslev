@@ -1,27 +1,27 @@
-name: slevarikoleme
+name: lovecslev
 
 # Lokální infrastruktura dle spec §8.3. Spuštění: docker compose up -d
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: slevari-postgres
+    container_name: lovecslev-postgres
     environment:
-      POSTGRES_USER: slevari
-      POSTGRES_PASSWORD: slevari
-      POSTGRES_DB: slevari
+      POSTGRES_USER: lovecslev
+      POSTGRES_PASSWORD: lovecslev
+      POSTGRES_DB: lovecslev
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U slevari -d slevari"]
+      test: ["CMD-SHELL", "pg_isready -U lovecslev -d lovecslev"]
       interval: 5s
       timeout: 3s
       retries: 10
 
   redis:
     image: redis:7-alpine
-    container_name: slevari-redis
+    container_name: lovecslev-redis
     command: ["redis-server", "--appendonly", "yes"]
     ports:
       - "6379:6379"
@@ -35,7 +35,7 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.4
-    container_name: slevari-elasticsearch
+    container_name: lovecslev-elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false

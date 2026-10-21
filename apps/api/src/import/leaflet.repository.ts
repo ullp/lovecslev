@@ -1,4 +1,4 @@
-import type { BaseUnit, PricingMode } from '@slevari/shared';
+import type { BaseUnit, PricingMode } from '@lovecslev/shared';
 
 export type ImportSource = 'SEED' | 'MANUAL' | 'IMPORT' | 'SCRAPE';
 

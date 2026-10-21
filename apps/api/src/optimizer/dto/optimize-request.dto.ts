@@ -14,7 +14,7 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import type { BaseUnit, PricingMode } from '@slevari/shared';
+import type { BaseUnit, PricingMode } from '@lovecslev/shared';
 
 const BASE_UNITS: readonly BaseUnit[] = ['G', 'ML', 'PCS'];
 const PRICING_MODES: readonly PricingMode[] = ['PACKAGE', 'WEIGHT'];

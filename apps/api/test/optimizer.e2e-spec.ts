@@ -1,6 +1,6 @@
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { EXPECTED, OFFERS, SHOPPING_LIST } from '@slevari/shared';
+import { EXPECTED, OFFERS, SHOPPING_LIST } from '@lovecslev/shared';
 import { createApp } from '../src/app.factory';
 
 describe('API (e2e) — M0 scaffold', () => {
@@ -22,7 +22,7 @@ describe('API (e2e) — M0 scaffold', () => {
 
   it('GET /health je veřejný', async () => {
     const response = await request(app.getHttpServer()).get('/health').expect(200);
-    expect(response.body).toMatchObject({ status: 'ok', service: 'slevari-api' });
+    expect(response.body).toMatchObject({ status: 'ok', service: 'lovec-slev-api' });
   });
 
   it('POST /v1/optimizer/preview (PREMIUM) vrátí Variantu A i B', async () => {

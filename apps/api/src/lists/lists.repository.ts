@@ -1,4 +1,4 @@
-import type { BaseUnit } from '@slevari/shared';
+import type { BaseUnit } from '@lovecslev/shared';
 import type {
   AddItemInput,
   ListItemRecord,

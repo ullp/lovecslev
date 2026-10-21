@@ -1,5 +1,5 @@
 {
-  "name": "@slevari/shared",
+  "name": "@lovecslev/shared",
   "version": "0.1.0",
   "private": true,
   "description": "Doménové jádro: peníze, jednotky, jednotková cena, optimalizace nákupu (spec §10, §11)",

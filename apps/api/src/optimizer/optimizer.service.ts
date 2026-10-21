@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { optimizePurchase, type OfferInput, type OptimizerItem, type Plan } from '@slevari/shared';
+import { optimizePurchase, type OfferInput, type OptimizerItem, type Plan } from '@lovecslev/shared';
 import type { OptimizeRequestDto } from './dto/optimize-request.dto';
 import { applyPlanGating } from './plan-gate';
 import type { OptimizeResponse } from './optimizer.types';
 
 /**
  * API vrstva optimalizace pro bezstavový preview endpoint (spec §11, §13.3).
- * Veškerá matematika je v @slevari/shared; tady se jen skládá odpověď.
+ * Veškerá matematika je v @lovecslev/shared; tady se jen skládá odpověď.
  */
 @Injectable()
 export class OptimizerService {

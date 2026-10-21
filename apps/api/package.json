@@ -1,8 +1,8 @@
 {
-  "name": "@slevari/api",
+  "name": "@lovecslev/api",
   "version": "0.1.0",
   "private": true,
-  "description": "Slevaři kolem mě — NestJS API (M0 scaffold)",
+  "description": "Lovec Slev — NestJS API (M0 scaffold)",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
@@ -24,8 +24,8 @@
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/platform-express": "^10.4.4",
     "@prisma/client": "^5.20.0",
-    "@slevari/seed-data": "*",
-    "@slevari/shared": "*",
+    "@lovecslev/seed-data": "*",
+    "@lovecslev/shared": "*",
     "argon2": "^0.41.1",
     "cheerio": "^1.2.0",
     "class-transformer": "^0.5.1",

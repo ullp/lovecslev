@@ -1,4 +1,4 @@
-import { EXPECTED, OFFERS, SHOPPING_LIST } from '@slevari/shared';
+import { EXPECTED, OFFERS, SHOPPING_LIST } from '@lovecslev/shared';
 import { OptimizerService } from './optimizer.service';
 import type { OptimizeRequestDto } from './dto/optimize-request.dto';
 

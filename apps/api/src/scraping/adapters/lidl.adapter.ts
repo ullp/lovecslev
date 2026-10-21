@@ -1,9 +1,9 @@
 import { load } from 'cheerio';
-import type { LeafletImportDto, LeafletProductDto, PricingMode, PackageUnit } from '@slevari/shared';
+import type { LeafletImportDto, LeafletProductDto, PricingMode, PackageUnit } from '@lovecslev/shared';
 import type { LeafletSourceAdapter, RawSnapshot } from '../scraping.types';
 
 export const LIDL_USER_AGENT =
-  'SlevariKolemeBot/0.1 (+https://slevarikoleme.cz/bot; kontakt: data@slevarikoleme.cz)';
+  'LovecSlevBot/0.1 (+https://lovecslev.cz/bot; kontakt: data@lovecslev.cz)';
 
 const toNumber = (value: string | undefined): number | null => {
   if (value === undefined) return null;

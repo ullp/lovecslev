@@ -1,4 +1,4 @@
-import { DomainError, PLAN_LIMITS } from '@slevari/shared';
+import { DomainError, PLAN_LIMITS } from '@lovecslev/shared';
 import { Inject, Injectable } from '@nestjs/common';
 import { CATALOG_REPOSITORY, type CatalogRepository } from '../catalog/catalog.repository';
 import {

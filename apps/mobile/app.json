@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Slevaři kolem mě",
-    "slug": "slevari-koleme",
+    "name": "Lovec Slev",
+    "slug": "lovec-slev",
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -12,10 +12,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "cz.slevarikoleme.app"
+      "bundleIdentifier": "cz.lovecslev.app"
     },
     "android": {
-      "package": "cz.slevarikoleme.app"
+      "package": "cz.lovecslev.app"
     },
     "locales": {},
     "extra": {}

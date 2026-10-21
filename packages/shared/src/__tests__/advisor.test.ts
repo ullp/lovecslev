@@ -1,7 +1,7 @@
 
 describe('advisor — parser a šablona (spec §6 P1)', () => {
   it('parseAdvisorResponse přijme jen produkty z katalogu a platná množství', async () => {
-    const { parseAdvisorResponse } = await import('@slevari/shared');
+    const { parseAdvisorResponse } = await import('@lovecslev/shared');
     const catalog = [
       { productId: 'prd_mleko', name: 'Mléko polotučné', baseUnit: 'ML' as const, category: 'Mléčné' },
       { productId: 'prd_maslo', name: 'Máslo', baseUnit: 'G' as const, category: 'Mléčné' },
@@ -28,7 +28,7 @@ describe('advisor — parser a šablona (spec §6 P1)', () => {
   });
 
   it('parseAdvisorResponse odmítne nevalidní JSON i prázdný výběr', async () => {
-    const { parseAdvisorResponse, AdvisorParseError } = await import('@slevari/shared');
+    const { parseAdvisorResponse, AdvisorParseError } = await import('@lovecslev/shared');
     const catalog = [
       { productId: 'prd_mleko', name: 'Mléko polotučné', baseUnit: 'ML' as const, category: 'Mléčné' },
     ];
@@ -41,7 +41,7 @@ describe('advisor — parser a šablona (spec §6 P1)', () => {
   });
 
   it('buildTemplateDraft vybere základní koš deterministicky', async () => {
-    const { buildTemplateDraft } = await import('@slevari/shared');
+    const { buildTemplateDraft } = await import('@lovecslev/shared');
     const catalog = [
       { productId: 'p_mleko', name: 'Mléko polotučné', baseUnit: 'ML' as const, category: 'Mléčné' },
       { productId: 'p_maslo', name: 'Máslo', baseUnit: 'G' as const, category: 'Mléčné' },
@@ -57,7 +57,7 @@ describe('advisor — parser a šablona (spec §6 P1)', () => {
   });
 
   it('buildAdvisorPrompt zakazuje vymýšlení produktů i cen', async () => {
-    const { buildAdvisorPrompt } = await import('@slevari/shared');
+    const { buildAdvisorPrompt } = await import('@lovecslev/shared');
     const prompt = buildAdvisorPrompt(
       { freeText: 'nákup pro 4 lidi do 2500 Kč', budgetMinor: 250000 },
       [{ productId: 'prd_mleko', name: 'Mléko polotučné', baseUnit: 'ML', category: 'Mléčné' }],

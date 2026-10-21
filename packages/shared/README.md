@@ -1,6 +1,6 @@
-# @slevari/shared
+# @lovecslev/shared
 
-Doménové jádro aplikace **Slevaři kolem mě** — čisté deterministické funkce bez závislosti na DB či frameworku.
+Doménové jádro aplikace **Lovec Slev** — čisté deterministické funkce bez závislosti na DB či frameworku.
 Zdroj pravdy: [`dev/requirement-base-doc.md`](../../dev/requirement-base-doc.md) (§10 jednotky, §11 optimalizace, §19 fixture).
 
 ## Co tu je
@@ -16,7 +16,7 @@ Zdroj pravdy: [`dev/requirement-base-doc.md`](../../dev/requirement-base-doc.md)
 ## Použití
 
 ```ts
-import { formatCzk, optimizePurchase } from '@slevari/shared';
+import { formatCzk, optimizePurchase } from '@lovecslev/shared';
 
 const result = optimizePurchase({
   items: [{ productId: 'prd_mleko', quantityBase: 6000 }],
@@ -43,7 +43,7 @@ formatCzk(result.savingsMinor); // "0,00 Kč"
 
 ```bash
 npm install                     # v rootu repozitáře
-npm test --workspace=@slevari/shared
+npm test --workspace=@lovecslev/shared
 npx jest --config packages/shared/jest.config.js --rootDir packages/shared --coverage
 ```
 

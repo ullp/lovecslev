@@ -1,7 +1,7 @@
 import type { PublicUser, TokenPair } from './types';
 
-const TOKENS_KEY = 'slevari.tokens';
-const USER_KEY = 'slevari.user';
+const TOKENS_KEY = 'lovecslev.tokens';
+const USER_KEY = 'lovecslev.user';
 
 export interface StoredAuth {
   readonly tokens: TokenPair;

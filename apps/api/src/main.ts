@@ -7,7 +7,7 @@ async function bootstrap(): Promise<void> {
 
   await app.listen(port);
   // eslint-disable-next-line no-console
-  console.log(`slevari-api listening on http://localhost:${port} (GET /health)`);
+  console.log(`lovec-slev-api listening on http://localhost:${port} (GET /health)`);
 }
 
 void bootstrap();

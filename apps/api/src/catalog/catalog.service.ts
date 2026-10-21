@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DomainError, matchProduct, normalizeQuery, type ProductMatch } from '@slevari/shared';
+import { DomainError, matchProduct, normalizeQuery, type ProductMatch } from '@lovecslev/shared';
 import { buildPriceHistoryView, shiftIsoDate } from './price-history';
 import { CATALOG_REPOSITORY, SEARCH_PORT, type CatalogRepository, type SearchPort } from './catalog.repository';
 import { todayInPrague } from '../common/date';

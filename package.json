@@ -1,8 +1,8 @@
 {
-  "name": "slevarikoleme",
+  "name": "lovecslev",
   "version": "0.1.0",
   "private": true,
-  "description": "Slevaři kolem mě — agregátor letáků a optimalizace nákupu (spec: dev/requirement-base-doc.md)",
+  "description": "Lovec Slev — agregátor letáků a optimalizace nákupu (spec: dev/requirement-base-doc.md)",
   "license": "UNLICENSED",
   "workspaces": [
     "packages/*",

@@ -17,7 +17,7 @@ export function Nav(): JSX.Element {
     <nav className="nav">
       <div className="nav-inner">
         <Link href="/" className="brand">
-          Slevaři kolem mě
+          Lovec Slev
         </Link>
         <Link href="/" className="nav-link">
           Letáky

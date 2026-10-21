@@ -20,14 +20,14 @@ jobs:
       - name: Install
         run: npm ci
 
-      # API i mobil importují @slevari/shared z dist/, proto build jako první.
+      # API i mobil importují @lovecslev/shared z dist/, proto build jako první.
       - name: Build shared
-        run: npm run build --workspace=@slevari/shared
+        run: npm run build --workspace=@lovecslev/shared
 
       - name: Generate Prisma client
-        run: npm run db:generate --workspace=@slevari/api
+        run: npm run db:generate --workspace=@lovecslev/api
         env:
-          DATABASE_URL: postgresql://slevari:slevari@localhost:5432/slevari
+          DATABASE_URL: postgresql://lovecslev:lovecslev@localhost:5432/lovecslev
 
       - name: Typecheck
         run: npm run typecheck --workspaces --if-present
@@ -36,7 +36,7 @@ jobs:
         run: npm test --workspaces --if-present
 
       - name: Build API
-        run: npm run build --workspace=@slevari/api
+        run: npm run build --workspace=@lovecslev/api
 
   db-verify:
     name: DB migrations & seed (embedded Postgres)
@@ -48,11 +48,11 @@ jobs:
           node-version: '20'
           cache: npm
       - run: npm ci
-      - run: npm run build --workspace=@slevari/shared
-      - run: npm run build --workspace=@slevari/seed-data
-      - run: npm run db:generate --workspace=@slevari/api
+      - run: npm run build --workspace=@lovecslev/shared
+      - run: npm run build --workspace=@lovecslev/seed-data
+      - run: npm run db:generate --workspace=@lovecslev/api
         env:
-          DATABASE_URL: postgresql://slevari:slevari@localhost:5432/slevari
-      - run: npm run build --workspace=@slevari/api
+          DATABASE_URL: postgresql://lovecslev:lovecslev@localhost:5432/lovecslev
+      - run: npm run build --workspace=@lovecslev/api
       - name: Apply migrations, seed twice, verify counts + SQL search
-        run: npm run db:verify --workspace=@slevari/api
+        run: npm run db:verify --workspace=@lovecslev/api

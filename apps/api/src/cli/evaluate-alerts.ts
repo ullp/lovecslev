@@ -1,6 +1,6 @@
 /**
  * CLI vyhodnocení hlídače cen (spec §6 P2, §14.3 bod 6).
- * Spouští se po importu letáků: `npm run alerts:evaluate --workspace=@slevari/api`
+ * Spouští se po importu letáků: `npm run alerts:evaluate --workspace=@lovecslev/api`
  */
 import 'reflect-metadata';
 import { AlertEvaluationService } from '../alerts/alert-evaluation.service';

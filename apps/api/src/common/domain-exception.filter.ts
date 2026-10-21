@@ -1,6 +1,6 @@
 import { Catch, type ArgumentsHost, type ExceptionFilter } from '@nestjs/common';
 import type { Response } from 'express';
-import { DomainError, type DomainErrorCode } from '@slevari/shared';
+import { DomainError, type DomainErrorCode } from '@lovecslev/shared';
 
 /** Mapování doménových kódů na HTTP statusy (spec §13.4). */
 const STATUS_BY_CODE: Readonly<Partial<Record<DomainErrorCode, number>>> = {

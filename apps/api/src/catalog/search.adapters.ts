@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { PrismaClient } from '@prisma/client';
-import type { BaseUnit } from '@slevari/shared';
+import type { BaseUnit } from '@lovecslev/shared';
 import type { SearchCandidateRecord } from './catalog.types';
 import type { SearchPort } from './catalog.repository';
 

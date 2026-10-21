@@ -1,4 +1,4 @@
-import type { Plan } from '@slevari/shared';
+import type { Plan } from '@lovecslev/shared';
 import type { SearchPort } from '../catalog/catalog.repository';
 import type { SearchCandidateRecord } from '../catalog/catalog.types';
 import type { SubscriptionsService } from '../subscriptions/subscriptions.service';

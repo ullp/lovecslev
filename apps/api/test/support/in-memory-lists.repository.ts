@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { BaseUnit } from '@slevari/shared';
+import type { BaseUnit } from '@lovecslev/shared';
 import type { ListsRepository } from '../../src/lists/lists.repository';
 import type {
   AddItemInput,

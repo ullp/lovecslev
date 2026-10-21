@@ -4,7 +4,7 @@ import { Nav } from '@/components/nav';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Slevaři kolem mě',
+  title: 'Lovec Slev',
   description: 'Agregátor letáků a nejlevnější kombinace obchodů podle vašeho nákupního seznamu.',
 };
 

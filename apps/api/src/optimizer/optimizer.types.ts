@@ -4,7 +4,7 @@ import type {
   PurchasePlan,
   SingleStorePlan,
   VariantAReason,
-} from '@slevari/shared';
+} from '@lovecslev/shared';
 
 export type { Plan };
 

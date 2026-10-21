@@ -1,4 +1,4 @@
-import type { OptimizationResult, Plan } from '@slevari/shared';
+import type { OptimizationResult, Plan } from '@lovecslev/shared';
 import type { OptimizeResponse } from './optimizer.types';
 
 /**
