@@ -21,7 +21,6 @@ const skladat = (casti) => new RegExp(casti.join(''), 'i');
 /** Původní označení: varianta s "i" (repo, npm scope) a s "ř" (produkt). */
 const LEGACY = [skladat(['sle', 'va', 'ri']), skladat(['sle', 'va', 'ři'])];
 
-
 /** Co naopak v repu být MUSÍ — jinak přejmenování nedrží pohromadě. */
 const REQUIRED = [
   { file: 'README.md', pattern: /^# Lovec Slev$/m, popis: 'README nadpis "# Lovec Slev"' },
@@ -33,6 +32,10 @@ const REQUIRED = [
 ];
 
 const isBinary = (buffer) => buffer.subarray(0, 8000).includes(0);
+
+// Cesty z `git ls-files` jsou relativní ke kořeni repa — skript nesmí záviset
+// na tom, z jakého adresáře ho kdo pustí (root, workspace, CI).
+process.chdir(execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim());
 
 const tracked = execFileSync('git', ['ls-files', '-z'], { encoding: 'buffer' })
   .toString('utf8')
