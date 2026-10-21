@@ -6,15 +6,23 @@ on:
   pull_request:
 
 jobs:
-  verify:
-    name: Build & test
+  # Samostatný job = samostatný check run "Branding guard", který lze označit
+  # jako required status check v branch protection.
+  branding:
+    name: Branding guard
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       # Přejmenování na "Lovec Slev" (@lovecslev) musí držet — viz scripts/check-branding.mjs.
-      - name: Branding guard
-        run: npm run branding:check
+      - name: Check legacy project name
+        run: node scripts/check-branding.mjs
+
+  verify:
+    name: Build & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
